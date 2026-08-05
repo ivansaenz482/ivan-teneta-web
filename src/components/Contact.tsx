@@ -56,7 +56,7 @@ export default function Contact() {
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-zinc-400">
             Escríbeme hoy y recibe una cotización sin compromiso. Tu proyecto merece calidad
-            profesional desde el primer mensaje.
+            profesional desde el primer momento.
           </p>
         </motion.div>
 

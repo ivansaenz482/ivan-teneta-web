@@ -36,7 +36,7 @@ export default function Hero() {
           className="inline-flex items-center gap-2 rounded-full border border-aqua-500/40 bg-aqua-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-aqua-300"
         >
           <BadgeCheck size={14} />
-          Ingeniero de Software Certificado
+          Ingeniero en Tecnología de la Información
         </motion.div>
 
         <motion.h1
@@ -45,7 +45,7 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.1 }}
           className="mt-8 font-display text-4xl font-extrabold leading-tight text-white sm:text-6xl lg:text-7xl"
         >
-          Ing. Ivan Leonel
+          Ivan Leonel
           <br />
           <span className="text-aqua-gradient">Teneta Saenz</span>
         </motion.h1>

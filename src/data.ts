@@ -1,10 +1,10 @@
 export const PROFILE = {
-  name: 'Ing. Ivan Leonel Teneta Saenz',
+  name: 'Ivan Leonel Teneta Saenz',
   shortName: 'Ivan Teneta',
-  title: 'Ingeniero de Software & Consultor Tecnológico',
+  title: 'Ingeniero en Tecnología de la Información',
   whatsapp: '0985136117',
   whatsappIntl: '+593985136117',
-  whatsappLink: 'https://wa.me/593985136117?text=Hola%20Ing.%20Ivan%2C%20me%20gustar%C3%ADa%20consultar%20por%20un%20servicio%20profesional.',
+  whatsappLink: 'https://wa.me/593985136117?text=Hola%20Ivan%2C%20me%20gustar%C3%ADa%20consultar%20por%20un%20servicio%20profesional.',
   email: 'LEONELTENETA@GMAIL.COM',
   emailLink: 'mailto:leonelteneta@gmail.com',
   location: 'Ecuador · Atención Nacional',
