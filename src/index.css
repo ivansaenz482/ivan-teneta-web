@@ -4,22 +4,29 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Sora", "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --color-ink-950: #05050a;
-  --color-ink-900: #0a0a14;
-  --color-ink-800: #12121f;
-  --color-ink-700: #1c1c2e;
-  --color-gold-300: #fde68a;
-  --color-gold-400: #facc15;
-  --color-gold-500: #eab308;
-  --color-gold-600: #d97706;
+  --color-ink-950: #05070d;
+  --color-ink-900: #0a1020;
+  --color-ink-800: #101a2f;
+  --color-ink-700: #1a2740;
 
-  --animate-marquee: marquee 30s linear infinite;
+  --color-aqua-200: #a5f3fc;
+  --color-aqua-300: #67e8f9;
+  --color-aqua-400: #22d3ee;
+  --color-aqua-500: #06b6d4;
+  --color-aqua-600: #0891b2;
+  --color-aqua-700: #0e7490;
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-kenburns: kenburns 9s ease-in-out infinite alternate;
   --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-slow: pulse 4s ease-in-out infinite;
 
   @keyframes marquee {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
+  }
+  @keyframes kenburns {
+    from { transform: scale(1) translate(0, 0); }
+    to { transform: scale(1.15) translate(-2%, 2%); }
   }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
@@ -33,14 +40,14 @@ html {
 
 body {
   background-color: var(--color-ink-950);
-  color: #e7e7f0;
+  color: #e6edf7;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--color-gold-500);
-  color: #05050a;
+  background: var(--color-aqua-400);
+  color: #05070d;
 }
 
 /* Scrollbar profesional */
@@ -48,24 +55,24 @@ body {
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0a14;
+  background: #0a1020;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #facc15, #d97706);
+  background: linear-gradient(180deg, #22d3ee, #0891b2);
   border-radius: 8px;
 }
 
 /* Grid de fondo sutil */
 .bg-grid {
   background-image:
-    linear-gradient(rgba(250, 204, 21, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(250, 204, 21, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
   background-size: 56px 56px;
 }
 
-/* Texto con gradiente dorado */
-.text-gold-gradient {
-  background: linear-gradient(120deg, #fde68a 0%, #facc15 40%, #d97706 100%);
+/* Texto con gradiente turquesa */
+.text-aqua-gradient {
+  background: linear-gradient(120deg, #a5f3fc 0%, #22d3ee 45%, #0e7490 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -74,12 +81,12 @@ body {
 /* Borde resaltable tipo neon */
 .neon-border {
   position: relative;
-  border: 1px solid rgba(250, 204, 21, 0.35);
+  border: 1px solid rgba(34, 211, 238, 0.35);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .neon-border:hover {
-  border-color: rgba(250, 204, 21, 0.9);
+  border-color: rgba(34, 211, 238, 0.9);
   box-shadow:
-    0 0 0 1px rgba(250, 204, 21, 0.5),
-    0 0 24px rgba(250, 204, 21, 0.18);
+    0 0 0 1px rgba(34, 211, 238, 0.5),
+    0 0 24px rgba(34, 211, 238, 0.18);
 }

@@ -8,6 +8,7 @@ import {
   BadgeCheck,
 } from 'lucide-react'
 import { PROFILE } from '../data'
+import HeroBackdrop from './HeroBackdrop'
 
 const stats = [
   { value: '100%', label: 'Clientes satisfechos' },
@@ -22,10 +23,7 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-grid">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 left-1/2 h-[560px] w-[900px] -translate-x-1/2 rounded-full bg-gold-500/10 blur-[140px]" />
-        <div className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-gold-600/10 blur-[120px]" />
-      </div>
+      <HeroBackdrop />
 
       <motion.div
         style={{ y }}
@@ -35,7 +33,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 rounded-full border border-gold-500/40 bg-gold-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-300"
+          className="inline-flex items-center gap-2 rounded-full border border-aqua-500/40 bg-aqua-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-aqua-300"
         >
           <BadgeCheck size={14} />
           Ingeniero de Software Certificado
@@ -49,7 +47,7 @@ export default function Hero() {
         >
           Ing. Ivan Leonel
           <br />
-          <span className="text-gold-gradient">Teneta Saenz</span>
+          <span className="text-aqua-gradient">Teneta Saenz</span>
         </motion.h1>
 
         <motion.p
@@ -75,14 +73,14 @@ export default function Hero() {
             href={PROFILE.whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="neon-border inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-gold-400 to-gold-600 px-8 py-4 font-semibold text-ink-950"
+            className="neon-border inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-8 py-4 font-semibold text-ink-950"
           >
             <MessageCircle size={20} />
             Cotizar por WhatsApp
           </a>
           <a
             href="#servicios"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-4 font-semibold text-white transition-colors hover:border-gold-400/70 hover:bg-gold-500/10"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-4 font-semibold text-white transition-colors hover:border-aqua-400/70 hover:bg-aqua-500/10"
           >
             Ver servicios
             <ArrowRight size={20} />
@@ -100,7 +98,7 @@ export default function Hero() {
               key={stat.label}
               className="neon-border rounded-xl bg-ink-900/70 px-4 py-5 backdrop-blur"
             >
-              <div className="font-display text-2xl font-bold text-gold-gradient">{stat.value}</div>
+              <div className="font-display text-2xl font-bold text-aqua-gradient">{stat.value}</div>
               <div className="mt-1 text-xs font-medium uppercase tracking-wider text-zinc-400">
                 {stat.label}
               </div>
@@ -115,15 +113,15 @@ export default function Hero() {
           className="mt-14 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold uppercase tracking-widest text-zinc-500"
         >
           <span className="inline-flex items-center gap-1.5">
-            <ShieldCheck size={14} className="text-gold-400" /> Seguridad
+            <ShieldCheck size={14} className="text-aqua-400" /> Seguridad
           </span>
-          <span className="h-1 w-1 rounded-full bg-gold-500/50" />
+          <span className="h-1 w-1 rounded-full bg-aqua-500/50" />
           <span className="inline-flex items-center gap-1.5">
-            <Cpu size={14} className="text-gold-400" /> Tecnología moderna
+            <Cpu size={14} className="text-aqua-400" /> Tecnología moderna
           </span>
-          <span className="h-1 w-1 rounded-full bg-gold-500/50" />
+          <span className="h-1 w-1 rounded-full bg-aqua-500/50" />
           <span className="inline-flex items-center gap-1.5">
-            <Zap size={14} className="text-gold-400" /> Resultados rápidos
+            <Zap size={14} className="text-aqua-400" /> Resultados rápidos
           </span>
         </motion.div>
       </motion.div>

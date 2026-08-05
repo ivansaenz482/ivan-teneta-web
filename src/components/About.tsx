@@ -35,11 +35,11 @@ export default function About() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-gold-500/40 bg-gold-500/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-gold-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-aqua-500/40 bg-aqua-500/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-aqua-400">
               Sobre mí
             </span>
             <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-5xl">
-              Tecnología con <span className="text-gold-gradient">criterio profesional</span>
+              Tecnología con <span className="text-aqua-gradient">criterio profesional</span>
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-zinc-400">
               Soy el Ing. Ivan Leonel Teneta Saenz, ingeniero de software dedicado a transformar
@@ -55,7 +55,7 @@ export default function About() {
             <div className="mt-10 flex flex-wrap gap-4">
               <a
                 href="#contacto"
-                className="neon-border inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-gold-400 to-gold-600 px-7 py-3.5 font-semibold text-ink-950"
+                className="neon-border inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-7 py-3.5 font-semibold text-ink-950"
               >
                 Hablemos de tu proyecto
               </a>
@@ -74,7 +74,7 @@ export default function About() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="neon-border rounded-2xl bg-ink-900/80 p-6 backdrop-blur"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 text-ink-950">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-aqua-400 to-aqua-600 text-ink-950">
                     <Icon size={24} strokeWidth={2.2} />
                   </div>
                   <h3 className="mt-4 font-display text-lg font-semibold text-white">

@@ -28,17 +28,17 @@ export default function Navbar() {
       transition={{ duration: 0.6 }}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'border-b border-gold-500/20 bg-ink-950/80 backdrop-blur-xl'
+          ? 'border-b border-aqua-500/20 bg-ink-950/80 backdrop-blur-xl'
           : 'bg-transparent'
       }`}
     >
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-6 py-4">
         <a href="#inicio" className="flex items-center gap-2">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 text-ink-950 shadow-[0_0_20px_rgba(250,204,21,0.35)]">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-aqua-400 to-aqua-600 text-ink-950 shadow-[0_0_20px_rgba(250,204,21,0.35)]">
             <Code2 size={22} strokeWidth={2.4} />
           </span>
           <span className="font-display text-lg font-bold text-white">
-            Ivan <span className="text-gold-gradient">Teneta</span>
+            Ivan <span className="text-aqua-gradient">Teneta</span>
           </span>
         </a>
 
@@ -47,7 +47,7 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-zinc-300 transition-colors hover:text-gold-400"
+              className="text-sm font-medium text-zinc-300 transition-colors hover:text-aqua-400"
             >
               {link.label}
             </a>
@@ -58,7 +58,7 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className="neon-border inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white"
           >
-            <MessageCircle size={16} className="text-gold-400" />
+            <MessageCircle size={16} className="text-aqua-400" />
             Contactar
           </a>
         </div>
@@ -84,7 +84,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="text-base font-medium text-zinc-200 transition-colors hover:text-gold-400"
+                className="text-base font-medium text-zinc-200 transition-colors hover:text-aqua-400"
               >
                 {link.label}
               </a>
@@ -93,7 +93,7 @@ export default function Navbar() {
               href={PROFILE.whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gold-400 to-gold-600 px-5 py-3 font-semibold text-ink-950"
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-5 py-3 font-semibold text-ink-950"
             >
               <MessageCircle size={18} />
               Cotizar ahora

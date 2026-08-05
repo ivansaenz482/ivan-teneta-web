@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fde68a"/>
-      <stop offset="0.5" stop-color="#facc15"/>
-      <stop offset="1" stop-color="#d97706"/>
+      <stop offset="0" stop-color="#a5f3fc"/>
+      <stop offset="0.5" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#0e7490"/>
     </linearGradient>
   </defs>
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0a0a14" stroke="url(#g)" stroke-width="3"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0a1020" stroke="url(#g)" stroke-width="3"/>
   <text x="32" y="42" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="url(#g)" text-anchor="middle">IT</text>
 </svg>
