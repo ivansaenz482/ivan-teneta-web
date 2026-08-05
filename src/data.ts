@@ -24,7 +24,8 @@ export const PROJECTS = [
     title: 'Plataforma Contable Integral',
     category: 'Contabilidad',
     image: 'images/project2.jpg',
-    description: 'Libro diario, mayor, balances y cálculo de impuestos automatizados.',
+    description:
+      'Libro diario, mayor, balances, conciliaciones bancarias y cálculo de impuestos automatizados.',
   },
   {
     id: 3,
@@ -55,9 +56,9 @@ export const SERVICES = [
     id: 'contabilidad',
     title: 'Sistemas Contables',
     description:
-      'Plataformas contables automatizadas: libro diario, mayor, balances, impuestos y análisis financiero con precisión de nivel profesional.',
+      'Plataformas contables automatizadas: libro diario, mayor, balances, conciliaciones bancarias, impuestos y análisis financiero con precisión de nivel profesional.',
     icon: 'calculator',
-    features: ['Libro diario y mayor', 'Balances automatizados', 'Cálculo de impuestos'],
+    features: ['Libro diario y mayor', 'Conciliaciones bancarias', 'Balances automatizados', 'Cálculo de impuestos'],
   },
   {
     id: 'web',
