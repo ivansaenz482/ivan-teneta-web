@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { GraduationCap, Award, Target, HeartHandshake } from 'lucide-react'
+import { GraduationCap, Award, Target, HeartHandshake, Sparkles } from 'lucide-react'
 
 const highlights = [
   {
@@ -36,23 +36,24 @@ export default function About() {
             transition={{ duration: 0.6 }}
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-aqua-500/40 bg-aqua-500/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-aqua-400">
-              Sobre mí
+              <Sparkles size={14} />
+              Sobre nosotros
             </span>
             <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-5xl">
-              Ivan Leonel <span className="text-aqua-gradient">Teneta Saenz</span>
+              NovaSys <span className="text-aqua-gradient">Digital</span>
             </h2>
             <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-aqua-400/40 bg-aqua-500/10 px-4 py-2 font-semibold text-aqua-300">
               <GraduationCap size={18} />
-              Ingeniero en Tecnología de la Información
+              Liderado por un Ingeniero en Tecnología de la Información
             </div>
             <p className="mt-6 text-lg leading-relaxed text-zinc-400">
-              Ivan Leonel Teneta Saenz, ingeniero en tecnología de la información dedicado a
-              transformar negocios a través de soluciones digitales hechas a la medida. Diseño
-              sistemas de facturación y contabilidad que eliminan el trabajo manual, y desarrollo
-              páginas web y aplicaciones móviles que posicionan a las empresas en el mundo digital.
+              En NovaSys Digital transformamos negocios a través de soluciones digitales hechas a
+              la medida. Diseñamos sistemas de facturación y contabilidad que eliminan el trabajo
+              manual, y desarrollamos páginas web y aplicaciones móviles que posicionan a las
+              empresas en el mundo digital.
             </p>
             <p className="mt-4 text-lg leading-relaxed text-zinc-400">
-              Mi compromiso: entregar soluciones impecables, con bordes claros, funcionalidad
+              Nuestro compromiso: entregar soluciones impecables, con bordes claros, funcionalidad
               precisa y una experiencia de usuario que hable por sí sola.
             </p>
 

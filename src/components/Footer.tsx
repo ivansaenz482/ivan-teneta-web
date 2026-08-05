@@ -1,4 +1,4 @@
-import { Code2, MessageCircle, Mail, ArrowUp } from 'lucide-react'
+import { Sparkles, MessageCircle, Mail, ArrowUp } from 'lucide-react'
 import { PROFILE } from '../data'
 
 export default function Footer() {
@@ -7,12 +7,12 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <a href="#inicio" className="flex items-center gap-2">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-aqua-400 to-aqua-600 text-ink-950">
-              <Code2 size={22} strokeWidth={2.4} />
-            </span>
-            <span className="font-display text-lg font-bold text-white">
-              Ivan <span className="text-aqua-gradient">Teneta</span>
-            </span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-aqua-400 to-aqua-600 text-ink-950">
+            <Sparkles size={22} strokeWidth={2.4} />
+          </span>
+          <span className="font-display text-lg font-bold text-white">
+            NovaSys <span className="text-aqua-gradient">Digital</span>
+          </span>
           </a>
 
           <p className="text-center text-sm text-zinc-400">

@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   Cpu,
   Zap,
-  BadgeCheck,
+  Sparkles,
 } from 'lucide-react'
 import { PROFILE } from '../data'
 import HeroBackdrop from './HeroBackdrop'
@@ -35,19 +35,18 @@ export default function Hero() {
           transition={{ duration: 0.6 }}
           className="inline-flex items-center gap-2 rounded-full border border-aqua-500/40 bg-aqua-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-aqua-300"
         >
-          <BadgeCheck size={14} />
-          Ingeniero en Tecnología de la Información
+          <Sparkles size={14} />
+          NovaSys Digital
         </motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-8 font-display text-4xl font-extrabold leading-tight text-white sm:text-6xl lg:text-7xl"
+          className="mt-8 max-w-4xl font-display text-4xl font-extrabold leading-tight text-white sm:text-6xl lg:text-7xl"
         >
-          Ivan Leonel
-          <br />
-          <span className="text-aqua-gradient">Teneta Saenz</span>
+          Digitalizamos y automatizamos tu negocio con{' '}
+          <span className="text-aqua-gradient">sistemas de vanguardia</span>
         </motion.h1>
 
         <motion.p
@@ -56,10 +55,10 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-400 sm:text-xl"
         >
-          Especialista en <strong className="text-white">sistemas de facturación</strong>,{' '}
+          Sistemas de <strong className="text-white">facturación</strong>,{' '}
           <strong className="text-white">contabilidad digital</strong>,{' '}
           <strong className="text-white">páginas web profesionales</strong> y{' '}
-          <strong className="text-white">aplicaciones móviles</strong>. Llevo tu negocio al
+          <strong className="text-white">aplicaciones móviles</strong>. Llevamos tu negocio al
           siguiente nivel con tecnología de vanguardia.
         </motion.p>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Menu, X, MessageCircle, Code2 } from 'lucide-react'
+import { Menu, X, MessageCircle, Sparkles } from 'lucide-react'
 import { PROFILE } from '../data'
 
 const links = [
@@ -35,11 +35,11 @@ export default function Navbar() {
     >
       <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-6 py-4">
         <a href="#inicio" className="flex items-center gap-2">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-aqua-400 to-aqua-600 text-ink-950 shadow-[0_0_20px_rgba(250,204,21,0.35)]">
-            <Code2 size={22} strokeWidth={2.4} />
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-aqua-400 to-aqua-600 text-ink-950 shadow-[0_0_20px_rgba(34,211,238,0.35)]">
+            <Sparkles size={22} strokeWidth={2.4} />
           </span>
           <span className="font-display text-lg font-bold text-white">
-            Ivan <span className="text-aqua-gradient">Teneta</span>
+            NovaSys <span className="text-aqua-gradient">Digital</span>
           </span>
         </a>
 

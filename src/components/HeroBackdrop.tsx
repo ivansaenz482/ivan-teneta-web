@@ -10,6 +10,10 @@ import {
   Search,
   Settings,
   ChevronRight,
+  Calculator,
+  Globe,
+  Smartphone,
+  BarChart3,
 } from 'lucide-react'
 
 function InvoiceDashboard() {
@@ -134,7 +138,7 @@ function AccountingPanel() {
 
 function MobileApp() {
   return (
-    <div className="relative w-56 rounded-[2.2rem] border-[6px] border-ink-700 bg-ink-800 shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
+    <div className="relative w-60 rounded-[2.2rem] border-[6px] border-ink-700 bg-ink-800 shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
       <div className="absolute left-1/2 top-2 h-4 w-24 -translate-x-1/2 rounded-full bg-ink-950" />
       <div className="space-y-3 p-5 pt-8">
         <div className="flex items-center justify-between">
@@ -178,38 +182,56 @@ function MobileApp() {
 const SLIDES = [
   {
     id: 'facturacion',
-    title: 'Sistemas de Facturación',
     element: <InvoiceDashboard />,
-    position: 'left-6 top-[12%] rotate-[-4deg]',
-    floatClass: 'animate-float',
+    position: '-left-32 top-[15%] rotate-[-6deg]',
+    mobileScale: 0.5,
   },
   {
     id: 'contabilidad',
-    title: 'Sistemas Contables',
     element: <AccountingPanel />,
-    position: 'right-6 top-[14%] rotate-[3deg]',
-    floatClass: '',
+    position: '-right-24 top-[13%] rotate-[4deg]',
+    mobileScale: 0.5,
   },
   {
     id: 'movil',
-    title: 'Apps Móviles',
     element: <MobileApp />,
-    position: 'left-1/2 top-[18%] -translate-x-1/2',
-    floatClass: 'animate-float',
+    position: 'left-[40%] top-[20%]',
+    mobileScale: 0.8,
   },
+]
+
+const FLOATING = [
+  { icon: ReceiptText, className: 'left-[8%] top-[22%]', delay: 0 },
+  { icon: Calculator, className: 'right-[10%] top-[26%]', delay: 0.8 },
+  { icon: Globe, className: 'left-[14%] bottom-[18%]', delay: 1.6 },
+  { icon: Smartphone, className: 'right-[14%] bottom-[22%]', delay: 2.4 },
+  { icon: BarChart3, className: 'left-[28%] bottom-[8%]', delay: 3.2 },
+  { icon: Wallet, className: 'right-[26%] top-[12%]', delay: 4 },
 ]
 
 export default function HeroBackdrop() {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % SLIDES.length), 6000)
+    const id = setInterval(() => setIndex((i) => (i + 1) % SLIDES.length), 6500)
     return () => clearInterval(id)
   }, [])
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.10),transparent_65%)]" />
+      <div className="absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-aqua-500/15 blur-[130px]" />
+      <div className="absolute bottom-0 right-1/4 h-[380px] w-[380px] rounded-full bg-aqua-600/15 blur-[120px]" />
+
+      {FLOATING.map((chip) => (
+        <motion.div
+          key={chip.className}
+          animate={{ y: [0, -16, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: chip.delay }}
+          className={`absolute hidden h-14 w-14 items-center justify-center rounded-2xl border border-aqua-400/30 bg-ink-900/60 text-aqua-400 shadow-[0_0_24px_rgba(34,211,238,0.2)] backdrop-blur lg:flex ${chip.className}`}
+        >
+          <chip.icon size={22} strokeWidth={2} />
+        </motion.div>
+      ))}
 
       <AnimatePresence mode="sync">
         <motion.div
@@ -218,11 +240,12 @@ export default function HeroBackdrop() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ opacity: { duration: 1.4 } }}
-          className={`absolute ${SLIDES[index].position} hidden lg:block`}
+          className={`absolute hidden lg:block ${SLIDES[index].position}`}
         >
           <motion.div
-            animate={{ scale: [1, 1.12, 1.05] }}
-            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ scale: [1, 1.14, 1.05] }}
+            transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+            className="opacity-90"
           >
             {SLIDES[index].element}
           </motion.div>
@@ -236,13 +259,15 @@ export default function HeroBackdrop() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ opacity: { duration: 1.4 } }}
-          className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 scale-[0.42] justify-center opacity-30 lg:hidden"
+          className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center opacity-40 lg:hidden"
         >
-          {SLIDES[index].element}
+          <div style={{ transform: `scale(${SLIDES[index].mobileScale})` }}>
+            {SLIDES[index].element}
+          </div>
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/85 via-ink-950/80 to-ink-950" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/80 via-ink-950/70 to-ink-950" />
     </div>
   )
 }
