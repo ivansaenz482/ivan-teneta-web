@@ -217,7 +217,7 @@ export default function HeroBackdrop() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ opacity: { duration: 1.4 }, scale: { duration: 8, ease: 'linear' } }}
+          transition={{ opacity: { duration: 1.4 } }}
           className={`absolute ${SLIDES[index].position} hidden lg:block`}
         >
           <motion.div
@@ -229,7 +229,20 @@ export default function HeroBackdrop() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/85 via-ink-950/70 to-ink-950" />
+      <AnimatePresence mode="sync">
+        <motion.div
+          key={`${SLIDES[index].id}-mobile`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ opacity: { duration: 1.4 } }}
+          className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 scale-[0.42] justify-center opacity-30 lg:hidden"
+        >
+          {SLIDES[index].element}
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/85 via-ink-950/80 to-ink-950" />
     </div>
   )
 }

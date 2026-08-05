@@ -10,6 +10,37 @@ export const PROFILE = {
   location: 'Ecuador · Atención Nacional',
 }
 
+export const PROJECTS = [
+  {
+    id: 1,
+    title: 'Sistema de Facturación Electrónica',
+    category: 'Facturación',
+    image: 'images/project1.jpg',
+    description: 'Comprobantes autorizados, inventarios y reportes fiscales en tiempo real.',
+  },
+  {
+    id: 2,
+    title: 'Plataforma Contable Integral',
+    category: 'Contabilidad',
+    image: 'images/project2.jpg',
+    description: 'Libro diario, mayor, balances y cálculo de impuestos automatizados.',
+  },
+  {
+    id: 3,
+    title: 'Sitio Web Corporativo',
+    category: 'Páginas Web',
+    image: 'images/project3.jpg',
+    description: 'Diseño premium, tiendas en línea y posicionamiento en buscadores.',
+  },
+  {
+    id: 4,
+    title: 'Aplicación Móvil de Gestión',
+    category: 'Apps Móviles',
+    image: 'images/project4.jpg',
+    description: 'Apps Android e iOS con interfaz moderna y experiencia fluida.',
+  },
+]
+
 export const SERVICES = [
   {
     id: 'facturacion',
