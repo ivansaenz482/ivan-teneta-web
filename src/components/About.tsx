@@ -39,16 +39,21 @@ export default function About() {
               Sobre mí
             </span>
             <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-5xl">
-              Tecnología con <span className="text-aqua-gradient">criterio profesional</span>
+              Ing. Ivan Leonel <span className="text-aqua-gradient">Teneta Saenz</span>
             </h2>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-aqua-400/40 bg-aqua-500/10 px-4 py-2 font-semibold text-aqua-300">
+              <GraduationCap size={18} />
+              Ingeniero en Tecnología de la Información
+            </div>
             <p className="mt-6 text-lg leading-relaxed text-zinc-400">
-              Soy el Ing. Ivan Leonel Teneta Saenz, ingeniero de software dedicado a transformar
-              negocios a través de soluciones digitales hechas a la medida. Diseño sistemas de
-              facturación y contabilidad que eliminan el trabajo manual, y desarrollo páginas web y
-              aplicaciones móviles que posicionan a las empresas en el mundo digital.
+              Soy el Ing. Ivan Leonel Teneta Saenz, ingeniero en tecnología de la información
+              dedicado a transformar negocios a través de soluciones digitales hechas a la medida.
+              Diseño sistemas de facturación y contabilidad que eliminan el trabajo manual, y
+              desarrollo páginas web y aplicaciones móviles que posicionan a las empresas en el
+              mundo digital.
             </p>
             <p className="mt-4 text-lg leading-relaxed text-zinc-400">
-              Mi compromiso: entregar productos impecables, con bordes claros, funcionalidad
+              Mi compromiso: entregar soluciones impecables, con bordes claros, funcionalidad
               precisa y una experiencia de usuario que hable por sí sola.
             </p>
 
