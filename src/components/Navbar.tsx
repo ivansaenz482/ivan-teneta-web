@@ -6,8 +6,9 @@ import { PROFILE } from '../data'
 const links = [
   { href: '#inicio', label: 'Inicio' },
   { href: '#servicios', label: 'Servicios' },
+  { href: '#tecnologias', label: 'Tecnologías' },
   { href: '#portafolio', label: 'Portafolio' },
-  { href: '#acerca', label: 'Acerca de' },
+  { href: '#acerca', label: 'Nosotros' },
   { href: '#contacto', label: 'Contacto' },
 ]
 

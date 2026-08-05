@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Services from './components/Services'
+import TechStack from './components/TechStack'
 import Gallery from './components/Gallery'
 import About from './components/About'
 import Contact from './components/Contact'
@@ -18,6 +19,7 @@ export default function App() {
           <Hero />
         </div>
         <Services />
+        <TechStack />
         <Gallery />
         <About />
         <Contact />
