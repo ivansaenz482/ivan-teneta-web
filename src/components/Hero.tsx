@@ -43,10 +43,9 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-8 max-w-4xl font-display text-4xl font-extrabold leading-tight text-white sm:text-6xl lg:text-7xl"
+          className="mt-8 max-w-3xl font-display text-4xl font-extrabold leading-tight text-white sm:text-6xl lg:text-6xl"
         >
-          Digitalizamos y automatizamos tu negocio con{' '}
-          <span className="text-aqua-gradient">sistemas de vanguardia</span>
+          Digitaliza y <span className="text-aqua-gradient">automatiza</span> tu negocio
         </motion.h1>
 
         <motion.p
