@@ -3,7 +3,7 @@ import { PROFILE } from '../data'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-aqua-500/15 bg-ink-950">
+    <footer className="border-t border-aqua-500/15 bg-ink-950 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <a href="#inicio" className="flex items-center gap-2">

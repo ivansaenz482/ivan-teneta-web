@@ -6,16 +6,75 @@ import {
   Cpu,
   Zap,
   Sparkles,
+  type LucideIcon,
 } from 'lucide-react'
 import { PROFILE } from '../data'
 import HeroBackdrop from './HeroBackdrop'
+import BlurText from './reactbits/BlurText'
+import CountUp from './reactbits/CountUp'
 
-const stats = [
-  { value: '100%', label: 'Clientes satisfechos' },
-  { value: '24/7', label: 'Soporte técnico' },
-  { value: '+50', label: 'Proyectos entregados' },
-  { value: '5.0', label: 'Calidad garantizada' },
+type Stat = {
+  label: string
+  icon: LucideIcon
+  value?: number
+  prefix?: string
+  suffix?: string
+  duration?: number
+}
+
+const stats: Stat[] = [
+  {
+    label: 'Clientes satisfechos',
+    icon: ShieldCheck,
+    value: 100,
+    suffix: '%',
+    duration: 2,
+  },
+  {
+    label: 'Soporte técnico',
+    icon: Cpu,
+    value: 24,
+    suffix: '/7',
+    duration: 2.4,
+  },
+  {
+    label: 'Proyectos entregados',
+    icon: Zap,
+    value: 50,
+    prefix: '+',
+    duration: 2.2,
+  },
+  {
+    label: 'Calidad garantizada',
+    icon: Sparkles,
+    value: 5,
+    suffix: '.0',
+    duration: 1.8,
+  },
 ]
+
+function StatDisplay({ stat }: { stat: Stat }) {
+  const Icon = stat.icon
+  return (
+    <div className="neon-border rounded-xl bg-ink-900/70 px-4 py-5 backdrop-blur">
+      <div className="flex items-center justify-center gap-2">
+        <Icon size={20} className="shrink-0 text-aqua-400" />
+        {stat.value !== undefined && (
+          <CountUp
+            to={stat.value}
+            prefix={stat.prefix ?? ''}
+            suffix={stat.suffix ?? ''}
+            duration={stat.duration ?? 2}
+            className="font-display text-2xl font-bold text-aqua-gradient tabular-nums"
+          />
+        )}
+      </div>
+      <div className="mt-1 text-xs font-medium uppercase tracking-wider text-zinc-400">
+        {stat.label}
+      </div>
+    </div>
+  )
+}
 
 export default function Hero() {
   const { scrollY } = useScroll()
@@ -27,7 +86,7 @@ export default function Hero() {
 
       <motion.div
         style={{ y }}
-        className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-6 pt-28 pb-16 text-center"
+        className="relative mx-auto flex min-h-screen min-h-[100svh] max-w-7xl flex-col items-center justify-center px-5 pb-16 pt-28 sm:px-6"
       >
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -39,20 +98,22 @@ export default function Hero() {
           NovaSys Digital
         </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-8 max-w-3xl font-display text-4xl font-extrabold leading-tight text-white sm:text-6xl lg:text-6xl"
-        >
-          Digitaliza y <span className="text-aqua-gradient">automatiza</span> tu negocio
-        </motion.h1>
+        <h1 className="mt-8 max-w-4xl text-center font-display font-extrabold leading-tight text-white text-[clamp(2.1rem,6.5vw,4.5rem)]">
+          <BlurText
+            text="Digitaliza y automatiza tu negocio"
+            className="justify-center"
+            animateBy="words"
+            direction="top"
+            delay={28}
+            stepDuration={0.32}
+          />
+        </h1>
 
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-400 sm:text-xl"
+          className="mt-6 max-w-2xl text-center text-lg leading-relaxed text-zinc-400 sm:text-xl"
         >
           Sistemas de <strong className="text-white">facturación</strong>,{' '}
           <strong className="text-white">contabilidad digital</strong>,{' '}
@@ -65,20 +126,20 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
+          className="mt-10 flex w-full max-w-md flex-col items-center gap-4 sm:max-w-none sm:flex-row"
         >
           <a
             href={PROFILE.whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="neon-border inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-8 py-4 font-semibold text-ink-950"
+            className="neon-border inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-8 py-4 font-semibold text-ink-950 sm:w-auto"
           >
             <MessageCircle size={20} />
             Cotizar por WhatsApp
           </a>
           <a
             href="#servicios"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-4 font-semibold text-white transition-colors hover:border-aqua-400/70 hover:bg-aqua-500/10"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 px-8 py-4 font-semibold text-white transition-colors hover:border-aqua-400/70 hover:bg-aqua-500/10 sm:w-auto"
           >
             Ver servicios
             <ArrowRight size={20} />
@@ -89,18 +150,10 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          className="mt-16 grid w-full max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4"
+          className="mt-16 grid w-full max-w-3xl grid-cols-2 gap-3 sm:gap-4"
         >
           {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="neon-border rounded-xl bg-ink-900/70 px-4 py-5 backdrop-blur"
-            >
-              <div className="font-display text-2xl font-bold text-aqua-gradient">{stat.value}</div>
-              <div className="mt-1 text-xs font-medium uppercase tracking-wider text-zinc-400">
-                {stat.label}
-              </div>
-            </div>
+            <StatDisplay key={stat.label} stat={stat} />
           ))}
         </motion.div>
 

@@ -184,19 +184,19 @@ const SLIDES = [
     id: 'facturacion',
     element: <InvoiceDashboard />,
     position: '-left-32 top-[15%] rotate-[-6deg]',
-    mobileScale: 0.5,
+    mobileScaleClass: 'scale-[0.34] sm:scale-[0.42]',
   },
   {
     id: 'contabilidad',
     element: <AccountingPanel />,
     position: '-right-24 top-[13%] rotate-[4deg]',
-    mobileScale: 0.5,
+    mobileScaleClass: 'scale-[0.34] sm:scale-[0.42]',
   },
   {
     id: 'movil',
     element: <MobileApp />,
     position: 'left-[40%] top-[20%]',
-    mobileScale: 0.8,
+    mobileScaleClass: 'scale-[0.52] sm:scale-[0.6]',
   },
 ]
 
@@ -259,11 +259,9 @@ export default function HeroBackdrop() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ opacity: { duration: 1.4 } }}
-          className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center opacity-40 lg:hidden"
+          className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center opacity-30 lg:hidden"
         >
-          <div style={{ transform: `scale(${SLIDES[index].mobileScale})` }}>
-            {SLIDES[index].element}
-          </div>
+          <div className={SLIDES[index].mobileScaleClass}>{SLIDES[index].element}</div>
         </motion.div>
       </AnimatePresence>
 

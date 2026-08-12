@@ -9,6 +9,7 @@ const links = [
   { href: '#tecnologias', label: 'Tecnologías' },
   { href: '#portafolio', label: 'Portafolio' },
   { href: '#acerca', label: 'Nosotros' },
+  { href: '#vision', label: 'Visión y Misión' },
   { href: '#contacto', label: 'Contacto' },
 ]
 
@@ -28,7 +29,7 @@ export default function Navbar() {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-300 ${
         scrolled
           ? 'border-b border-aqua-500/20 bg-ink-950/80 backdrop-blur-xl'
           : 'bg-transparent'
@@ -44,12 +45,12 @@ export default function Navbar() {
           </span>
         </a>
 
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-6 lg:flex">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-zinc-300 transition-colors hover:text-aqua-400"
+              className="whitespace-nowrap text-sm font-medium text-zinc-300 transition-colors hover:text-aqua-400"
             >
               {link.label}
             </a>
@@ -66,7 +67,7 @@ export default function Navbar() {
         </div>
 
         <button
-          className="rounded-lg border border-white/15 p-2 text-white md:hidden"
+          className="rounded-lg border border-white/15 p-2 text-white lg:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="Menú"
         >
@@ -78,7 +79,7 @@ export default function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border-t border-white/10 bg-ink-950/95 px-6 py-6 backdrop-blur-xl md:hidden"
+          className="border-t border-white/10 bg-ink-950/95 px-6 py-6 backdrop-blur-xl lg:hidden"
         >
           <div className="flex flex-col gap-4">
             {links.map((link) => (
