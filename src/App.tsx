@@ -8,6 +8,7 @@ import Gallery from './components/Gallery'
 import About from './components/About'
 import Mission from './components/Mission'
 import Contact from './components/Contact'
+import QRCode from './components/QRCode'
 import Footer from './components/Footer'
 import { PROFILE } from './data'
 
@@ -25,6 +26,7 @@ export default function App() {
         <About />
         <Mission />
         <Contact />
+        <QRCode />
       </main>
       <Footer />
 
