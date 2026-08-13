@@ -30,13 +30,13 @@ export type SiteConfig = {
   productViews: Record<string, number>
 }
 
-const STORAGE_KEY = 'modogym_site_config_v2'
+const STORAGE_KEY = 'modogym_site_config_v3'
 
 function buildDefaults(): SiteConfig {
   return {
     brandName: PROFILE.name,
-    storeName: 'Modo Gym',
-    storeTagline: 'Soporte Técnico & Software',
+    storeName: 'Tienda Virtual',
+    storeTagline: 'de Sistemas y Soporte',
     storeSubtitle:
       'Servicios y productos de soporte técnico y software al mejor precio. Solicita tu cotización directo por WhatsApp y coordina la entrega o instalación.',
     whatsapp: PROFILE.whatsapp,

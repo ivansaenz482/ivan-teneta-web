@@ -136,7 +136,7 @@ export default function Store() {
             Tienda Virtual
           </span>
           <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-5xl">
-            <ShinyText text={config.storeName} className="text-[1em]" /> ·{' '}
+            <ShinyText text={config.storeName} className="text-[1em]" />{' '}
             <span className="text-aqua-gradient">{config.storeTagline}</span>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-400 sm:text-lg">
