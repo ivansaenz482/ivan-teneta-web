@@ -481,6 +481,25 @@ function SocialTab() {
             onChange={(e) => set({ storeName: e.target.value })}
           />
         </Field>
+        <div className="sm:col-span-2">
+          <Field label="Lema de la tienda (título)">
+            <input
+              className={inputClass}
+              value={config.storeTagline}
+              onChange={(e) => set({ storeTagline: e.target.value })}
+            />
+          </Field>
+        </div>
+        <div className="sm:col-span-2">
+          <Field label="Descripción de la tienda">
+            <textarea
+              rows={2}
+              className={inputClass}
+              value={config.storeSubtitle}
+              onChange={(e) => set({ storeSubtitle: e.target.value })}
+            />
+          </Field>
+        </div>
         <Field label="Número WhatsApp (ej. 0985136117)">
           <input
             className={inputClass}
