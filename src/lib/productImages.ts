@@ -1,0 +1,38 @@
+export function placeholderImage(emoji: string): string {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#101a2f'/><stop offset='1' stop-color='#0e7490'/></linearGradient></defs><rect width='400' height='400' fill='url(#g)'/><text x='200' y='250' font-size='170' text-anchor='middle'>${emoji}</text></svg>`
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
+function readFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+export async function fileToDataUri(file: File, maxSize = 700): Promise<string> {
+  const data = await readFile(file)
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      let { width, height } = img
+      const scale = Math.min(1, maxSize / Math.max(width, height))
+      width = Math.max(1, Math.round(width * scale))
+      height = Math.max(1, Math.round(height * scale))
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(data)
+        return
+      }
+      ctx.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.85))
+    }
+    img.onerror = () => reject(new Error('Imagen inválida'))
+    img.src = data
+  })
+}

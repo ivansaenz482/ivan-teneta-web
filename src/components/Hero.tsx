@@ -8,7 +8,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from 'lucide-react'
-import { PROFILE } from '../data'
+import { useConfig } from '../lib/config'
 import HeroBackdrop from './HeroBackdrop'
 import BlurText from './reactbits/BlurText'
 import CountUp from './reactbits/CountUp'
@@ -79,6 +79,7 @@ function StatDisplay({ stat }: { stat: Stat }) {
 export default function Hero() {
   const { scrollY } = useScroll()
   const y = useTransform(scrollY, [0, 500], [0, 120])
+  const { waLink, recordWhatsappClick } = useConfig()
 
   return (
     <section className="relative overflow-hidden bg-grid">
@@ -129,9 +130,10 @@ export default function Hero() {
           className="mt-10 flex w-full max-w-md flex-col items-center gap-4 sm:max-w-none sm:flex-row"
         >
           <a
-            href={PROFILE.whatsappLink}
+            href={waLink()}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={recordWhatsappClick}
             className="neon-border inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-8 py-4 font-semibold text-ink-950 sm:w-auto"
           >
             <MessageCircle size={20} />

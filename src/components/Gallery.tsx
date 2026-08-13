@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, FolderOpen, ArrowUpRight, Layers } from 'lucide-react'
-import { PROJECTS, PROFILE } from '../data'
+import { PROJECTS } from '../data'
+import { useConfig } from '../lib/config'
 
 export default function Gallery() {
+  const { waLink, recordWhatsappClick } = useConfig()
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState(1)
 
@@ -104,9 +106,10 @@ export default function Gallery() {
                     {project.description}
                   </p>
                   <a
-                    href={PROFILE.whatsappLink}
+                    href={waLink()}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={recordWhatsappClick}
                     className="neon-border mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-6 py-3 font-semibold text-ink-950"
                   >
                     Cotizar este proyecto
