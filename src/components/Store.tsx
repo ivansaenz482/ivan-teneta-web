@@ -7,12 +7,11 @@ import ShinyText from './reactbits/ShinyText'
 import { TikTokIcon, InstagramIcon } from './icons'
 import type { Product } from '../data'
 
-type Filter = 'todos' | 'perfume' | 'gym'
+type Filter = string
 
-const filters: { key: Filter; label: string }[] = [
+const filters = (categories: { id: string; name: string }[]) => [
   { key: 'todos', label: 'Todos' },
-  { key: 'perfume', label: 'Perfumes' },
-  { key: 'gym', label: 'Gym' },
+  ...categories.map((c) => ({ key: c.id, label: c.name })),
 ]
 
 function tagBadge(tag?: string) {
@@ -38,7 +37,7 @@ function tagBadge(tag?: string) {
 }
 
 function ProductCard({ product, index }: { product: Product; index: number }) {
-  const { orderLink, recordProductView } = useConfig()
+  const { orderLink, recordProductView, categoryName } = useConfig()
   const ref = useRef<HTMLDivElement>(null)
   const tracked = useRef(false)
 
@@ -68,19 +67,19 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       className="h-full"
     >
       <SpotlightCard className="flex h-full flex-col">
-        <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-ink-950/60">
+        <div className="relative flex min-h-40 items-center justify-center overflow-hidden rounded-t-2xl bg-ink-950/60 sm:min-h-48">
           <img
             src={product.image}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-cover"
+            className="max-h-64 w-full object-contain"
           />
           <div className="absolute left-2 top-2">{tagBadge(product.tag)}</div>
         </div>
 
         <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
           <div className="text-[10px] font-bold uppercase tracking-widest text-aqua-400">
-            {product.category === 'perfume' ? 'Perfume' : 'Gym'}
+            {categoryName(product.category)}
           </div>
           <h3 className="font-display text-sm font-semibold leading-snug text-white sm:text-base">
             {product.name}
@@ -115,6 +114,7 @@ export default function Store() {
   const products = config.products.filter(
     (p) => filter === 'todos' || p.category === filter
   )
+  const filterOptions = filters(config.categories)
 
   return (
     <section id="tienda" className="relative overflow-hidden py-24">
@@ -146,7 +146,7 @@ export default function Store() {
         </motion.div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          {filters.map((f) => (
+          {filterOptions.map((f) => (
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}

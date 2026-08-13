@@ -19,10 +19,21 @@ export const PROFILE = {
   instagram: 'https://www.instagram.com/novasysdigital',
 }
 
+export type Category = {
+  id: string
+  name: string
+  emoji: string
+}
+
+export const CATEGORIES: Category[] = [
+  { id: 'perfume', name: 'Perfumes', emoji: '🧴' },
+  { id: 'gym', name: 'Gym', emoji: '🏋️' },
+]
+
 export type Product = {
   id: string
   name: string
-  category: 'perfume' | 'gym'
+  category: string
   price: number
   emoji: string
   image: string

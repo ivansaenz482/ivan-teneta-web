@@ -15,6 +15,10 @@ import {
   TrendingUp,
   Users,
   Package,
+  Tags,
+  Plus,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react'
 import { useConfig } from '../lib/config'
 import { fileToDataUri } from '../lib/productImages'
@@ -214,7 +218,7 @@ function ImageInput({
       <img
         src={value}
         alt="Producto"
-        className="h-16 w-16 shrink-0 rounded-lg border border-white/10 object-cover"
+        className="h-16 w-16 shrink-0 rounded-lg border border-white/10 bg-ink-950/60 object-contain"
       />
       <div className="flex flex-col gap-2 sm:flex-row">
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:border-aqua-400/60 hover:text-white">
@@ -251,10 +255,8 @@ function ImageInput({
   )
 }
 
-const categories: Product['category'][] = ['perfume', 'gym']
-
 function ProductsTab() {
-  const { config, updateProduct } = useConfig()
+  const { config, updateProduct, categoryName } = useConfig()
   const [savedId, setSavedId] = useState<string | null>(null)
 
   const save = (id: string) => {
@@ -290,14 +292,14 @@ function ProductsTab() {
               <img
                 src={product.image}
                 alt={product.name}
-                className="h-12 w-12 rounded-lg border border-white/10 object-cover"
+                className="h-12 w-12 rounded-lg border border-white/10 bg-ink-950/60 object-contain"
               />
               <div>
                 <div className="font-display text-base font-semibold text-white">
                   {product.name}
                 </div>
                 <div className="text-xs text-zinc-500">
-                  {product.category === 'perfume' ? 'Perfume' : 'Gym'} · ${product.price}
+                  {categoryName(product.category)} · ${product.price}
                 </div>
               </div>
             </div>
@@ -331,14 +333,12 @@ function ProductsTab() {
                 className={inputClass}
                 value={product.category}
                 onChange={(e) =>
-                  updateProduct(product.id, {
-                    category: e.target.value as Product['category'],
-                  })
+                  updateProduct(product.id, { category: e.target.value })
                 }
               >
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c === 'perfume' ? 'Perfume' : 'Gym'}
+                {config.categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.emoji} {c.name}
                   </option>
                 ))}
               </select>
@@ -581,11 +581,151 @@ function SecurityTab() {
   )
 }
 
-type Tab = 'dashboard' | 'productos' | 'redes' | 'seguridad'
+function CategoriesTab() {
+  const { config, updateConfig } = useConfig()
+  const [name, setName] = useState('')
+  const [emoji, setEmoji] = useState('')
+  const [warnId, setWarnId] = useState<string | null>(null)
+
+  const add = () => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    const id = trimmed
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+    if (!id || config.categories.some((c) => c.id === id)) return
+    updateConfig({
+      categories: [...config.categories, { id, name: trimmed, emoji: emoji.trim() || '🏷️' }],
+    })
+    setName('')
+    setEmoji('')
+  }
+
+  const update = (id: string, patch: { name?: string; emoji?: string }) => {
+    updateConfig({
+      categories: config.categories.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    })
+  }
+
+  const remove = (id: string) => {
+    const used = config.products.filter((p) => p.category === id).length
+    if (used > 0 || config.categories.length <= 1) {
+      setWarnId(id)
+      return
+    }
+    updateConfig({ categories: config.categories.filter((c) => c.id !== id) })
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-display text-lg font-semibold text-white">
+          Categorías de la tienda
+        </h3>
+        <p className="text-sm text-zinc-400">
+          Crea, renombra o elimina categorías. Los filtros de la tienda se actualizan
+          automáticamente.
+        </p>
+      </div>
+
+      <div className="neon-border rounded-2xl bg-ink-900/80 p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <Field label="Nombre de la nueva categoría">
+              <input
+                className={inputClass}
+                placeholder="Ej. Accesorios, Ropa, Ofertas…"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Field>
+          </div>
+          <div className="sm:w-28">
+            <Field label="Emoji">
+              <input
+                className={inputClass}
+                placeholder="🧴"
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+              />
+            </Field>
+          </div>
+          <button
+            onClick={add}
+            disabled={!name.trim()}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-5 py-2.5 text-sm font-semibold text-ink-950 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Plus size={16} />
+            Agregar categoría
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {config.categories.map((c) => {
+          const used = config.products.filter((p) => p.category === c.id).length
+          const locked = used > 0 || config.categories.length <= 1
+          return (
+            <div
+              key={c.id}
+              className="neon-border flex flex-col gap-3 rounded-2xl bg-ink-900/80 p-4 sm:flex-row sm:items-center"
+            >
+              <div className="flex items-center gap-3 sm:w-64">
+                <span className="text-2xl">{c.emoji}</span>
+                <input
+                  className={inputClass}
+                  value={c.name}
+                  onChange={(e) => update(c.id, { name: e.target.value })}
+                />
+              </div>
+              <div className="flex flex-1 items-center gap-3">
+                <input
+                  className={`${inputClass} max-w-24`}
+                  value={c.emoji}
+                  onChange={(e) => update(c.id, { emoji: e.target.value })}
+                />
+                <span className="whitespace-nowrap text-xs text-zinc-500">
+                  {used} producto{used === 1 ? '' : 's'}
+                </span>
+              </div>
+              <button
+                onClick={() => remove(c.id)}
+                disabled={locked}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-rose-300 transition-colors hover:border-rose-400/60 disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                <Trash2 size={14} />
+                Eliminar
+              </button>
+              {warnId === c.id && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-300">
+                  <AlertTriangle size={13} />
+                  {used > 0
+                    ? `Mueve primero sus ${used} productos a otra categoría.`
+                    : 'Debe quedar al menos una categoría.'}
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <p className="rounded-xl border border-white/10 bg-ink-950/60 p-4 text-xs leading-relaxed text-zinc-500">
+        Las categorías y productos se guardan en este navegador (localStorage). Al ser un
+        sitio estático sin servidor, no se sincronizan entre dispositivos.
+      </p>
+    </div>
+  )
+}
+
+type Tab = 'dashboard' | 'productos' | 'categorias' | 'redes' | 'seguridad'
 
 const tabs: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'productos', label: 'Productos', icon: ShoppingBag },
+  { key: 'categorias', label: 'Categorías', icon: Tags },
   { key: 'redes', label: 'Redes y Contacto', icon: Share2 },
   { key: 'seguridad', label: 'Seguridad', icon: Lock },
 ]
@@ -661,6 +801,7 @@ export default function Admin() {
 
         {tab === 'dashboard' && <DashboardTab />}
         {tab === 'productos' && <ProductsTab />}
+        {tab === 'categorias' && <CategoriesTab />}
         {tab === 'redes' && <SocialTab />}
         {tab === 'seguridad' && <SecurityTab />}
       </div>

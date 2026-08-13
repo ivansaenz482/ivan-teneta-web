@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { PROFILE, PRODUCTS, type Product } from '../data'
+import { PROFILE, PRODUCTS, CATEGORIES, type Product, type Category } from '../data'
 import { placeholderImage } from './productImages'
 
 export type SiteConfig = {
@@ -23,6 +23,7 @@ export type SiteConfig = {
   logoImage: string
   visits: number
   whatsappClicks: number
+  categories: Category[]
   products: Product[]
   productViews: Record<string, number>
 }
@@ -44,6 +45,7 @@ function buildDefaults(): SiteConfig {
     logoImage: '',
     visits: 0,
     whatsappClicks: 0,
+    categories: CATEGORIES,
     products: PRODUCTS.map((p) => ({ ...p, image: placeholderImage(p.emoji) })),
     productViews: {},
   }
@@ -65,6 +67,9 @@ function loadConfig(): SiteConfig {
     return {
       ...defaults,
       ...stored,
+      categories: Array.isArray(stored.categories) && stored.categories.length > 0
+        ? stored.categories
+        : defaults.categories,
       products,
       productViews: stored.productViews ?? defaults.productViews,
     }
@@ -80,6 +85,7 @@ type ConfigContextValue = {
   resetConfig: () => void
   waLink: (message?: string) => string
   orderLink: (product: Product) => string
+  categoryName: (id: string) => string
   recordProductView: (id: string) => void
   recordWhatsappClick: () => void
 }
@@ -140,6 +146,9 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     setConfig((c) => ({ ...c, whatsappClicks: (c.whatsappClicks ?? 0) + 1 }))
   }
 
+  const categoryName = (id: string) =>
+    config.categories.find((c) => c.id === id)?.name ?? id
+
   return (
     <ConfigContext.Provider
       value={{
@@ -149,6 +158,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         resetConfig,
         waLink,
         orderLink,
+        categoryName,
         recordProductView,
         recordWhatsappClick,
       }}
