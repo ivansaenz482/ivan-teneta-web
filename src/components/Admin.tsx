@@ -256,17 +256,23 @@ function ImageInput({
 }
 
 function ProductsTab() {
-  const { config, updateProduct, categoryName } = useConfig()
+  const { config, updateProduct, addProduct, removeProduct, categoryName } = useConfig()
   const [savedId, setSavedId] = useState<string | null>(null)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   const save = (id: string) => {
     setSavedId(id)
     setTimeout(() => setSavedId(null), 1500)
   }
 
+  const confirmDelete = (id: string) => {
+    removeProduct(id)
+    setConfirmingId(null)
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold text-white">
             Gestionar productos
@@ -275,11 +281,20 @@ function ProductsTab() {
             Cambia precios, nombres, descripciones e imágenes de la tienda.
           </p>
         </div>
-        {savedId && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-aqua-500/15 px-3 py-1.5 text-xs font-semibold text-aqua-300">
-            <Save size={13} /> Guardado
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {savedId && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-aqua-500/15 px-3 py-1.5 text-xs font-semibold text-aqua-300">
+              <Save size={13} /> Guardado
+            </span>
+          )}
+          <button
+            onClick={() => addProduct()}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-5 py-2.5 text-sm font-semibold text-ink-950"
+          >
+            <Plus size={16} />
+            Agregar producto
+          </button>
+        </div>
       </div>
 
       {config.products.map((product) => (
@@ -287,7 +302,7 @@ function ProductsTab() {
           key={product.id}
           className="neon-border rounded-2xl bg-ink-900/80 p-5"
         >
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <img
                 src={product.image}
@@ -303,9 +318,39 @@ function ProductsTab() {
                 </div>
               </div>
             </div>
-            <span className="text-xs text-zinc-500 tabular-nums">
-              {(config.productViews[product.id] ?? 0)} vistas
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-zinc-500 tabular-nums">
+                {(config.productViews[product.id] ?? 0)} vistas
+              </span>
+              {confirmingId === product.id ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-xs font-medium text-amber-300">
+                    ¿Eliminar?
+                  </span>
+                  <button
+                    onClick={() => confirmDelete(product.id)}
+                    className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white"
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button
+                    onClick={() => setConfirmingId(null)}
+                    className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold text-zinc-300"
+                  >
+                    Cancelar
+                  </button>
+                </span>
+              ) : (
+                <button
+                  onClick={() => setConfirmingId(product.id)}
+                  aria-label={`Eliminar ${product.name}`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-rose-300 transition-colors hover:border-rose-400/60"
+                >
+                  <Trash2 size={14} />
+                  Eliminar
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -59,10 +59,17 @@ function loadConfig(): SiteConfig {
     const stored = JSON.parse(raw) as Partial<SiteConfig>
 
     const defaultProducts = defaults.products
-    const storedProducts = Array.isArray(stored.products) ? stored.products : []
-    const products = defaultProducts.map(
-      (dp) => storedProducts.find((p) => p.id === dp.id) ?? dp
-    )
+    let products: Product[]
+    if (stored.products !== undefined) {
+      products = (Array.isArray(stored.products) ? stored.products : []).map(
+        (p) => {
+          const def = defaultProducts.find((d) => d.id === p.id)
+          return def ? { ...def, ...p } : p
+        }
+      )
+    } else {
+      products = defaultProducts
+    }
 
     return {
       ...defaults,
@@ -82,6 +89,8 @@ type ConfigContextValue = {
   config: SiteConfig
   updateConfig: (patch: Partial<SiteConfig>) => void
   updateProduct: (id: string, patch: Partial<Product>) => void
+  addProduct: (base?: Partial<Product>) => string
+  removeProduct: (id: string) => void
   resetConfig: () => void
   waLink: (message?: string) => string
   orderLink: (product: Product) => string
@@ -123,6 +132,40 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     }))
   }
 
+  const addProduct = (base?: Partial<Product>) => {
+    const id = `prod-${Date.now()}`
+    const emoji = base?.emoji ?? '🛍️'
+    setConfig((c) => ({
+      ...c,
+      products: [
+        {
+          id,
+          name: base?.name ?? 'Nuevo producto',
+          category: base?.category ?? c.categories[0]?.id ?? '',
+          price: base?.price ?? 0,
+          emoji,
+          image: base?.image ?? placeholderImage(emoji),
+          description: base?.description ?? '',
+          tag: base?.tag,
+        },
+        ...c.products,
+      ],
+    }))
+    return id
+  }
+
+  const removeProduct = (id: string) => {
+    setConfig((c) => {
+      const views = { ...c.productViews }
+      delete views[id]
+      return {
+        ...c,
+        products: c.products.filter((p) => p.id !== id),
+        productViews: views,
+      }
+    })
+  }
+
   const resetConfig = () => setConfig(buildDefaults())
 
   const waLink = (message?: string) =>
@@ -155,6 +198,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         config,
         updateConfig,
         updateProduct,
+        addProduct,
+        removeProduct,
         resetConfig,
         waLink,
         orderLink,
