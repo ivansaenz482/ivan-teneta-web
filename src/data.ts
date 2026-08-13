@@ -5,13 +5,10 @@ export const PROFILE = {
   slogan: 'Digitalizamos y automatizamos tu negocio con sistemas de vanguardia.',
   whatsapp: '0985136117',
   whatsappIntl: '+593985136117',
-  whatsappMessage:
-    'Hola, somos Modo Gym, un gusto atenderte. ¿En qué te podemos ayudar?',
+  whatsappMessage: 'Hola, un gusto atenderte. ¿En qué te podemos ayudar?',
   whatsappLink:
     'https://wa.me/593985136117?text=' +
-    encodeURIComponent(
-      'Hola, somos Modo Gym, un gusto atenderte. ¿En qué te podemos ayudar?'
-    ),
+    encodeURIComponent('Hola, un gusto atenderte. ¿En qué te podemos ayudar?'),
   email: 'LEONELTENETA@GMAIL.COM',
   emailLink: 'mailto:leonelteneta@gmail.com',
   location: 'Ecuador · Atención Nacional',

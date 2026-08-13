@@ -30,7 +30,7 @@ export type SiteConfig = {
   productViews: Record<string, number>
 }
 
-const STORAGE_KEY = 'modogym_site_config_v3'
+const STORAGE_KEY = 'modogym_site_config_v4'
 
 function buildDefaults(): SiteConfig {
   return {

@@ -184,7 +184,7 @@ export default function Store() {
               className="neon-border inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-8 py-3.5 font-semibold text-ink-950"
             >
               <MessageCircle size={18} />
-              Hablar con Modo Gym
+              Hablar por WhatsApp
             </a>
             {config.tiktok && (
               <a
