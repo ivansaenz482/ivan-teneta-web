@@ -15,6 +15,7 @@ import {
   Smartphone,
   BarChart3,
 } from 'lucide-react'
+import { Parallax } from './Parallax'
 
 function InvoiceDashboard() {
   const rows = [
@@ -185,28 +186,31 @@ const SLIDES = [
     element: <InvoiceDashboard />,
     position: '-left-32 top-[15%] rotate-[-6deg]',
     mobileScaleClass: 'scale-[0.34] sm:scale-[0.42]',
+    speed: 0.68,
   },
   {
     id: 'contabilidad',
     element: <AccountingPanel />,
     position: '-right-24 top-[13%] rotate-[4deg]',
     mobileScaleClass: 'scale-[0.34] sm:scale-[0.42]',
+    speed: 0.82,
   },
   {
     id: 'movil',
     element: <MobileApp />,
     position: 'left-[40%] top-[20%]',
     mobileScaleClass: 'scale-[0.52] sm:scale-[0.6]',
+    speed: 0.75,
   },
 ]
 
 const FLOATING = [
-  { icon: ReceiptText, className: 'left-[8%] top-[22%]', delay: 0 },
-  { icon: Calculator, className: 'right-[10%] top-[26%]', delay: 0.8 },
-  { icon: Globe, className: 'left-[14%] bottom-[18%]', delay: 1.6 },
-  { icon: Smartphone, className: 'right-[14%] bottom-[22%]', delay: 2.4 },
-  { icon: BarChart3, className: 'left-[28%] bottom-[8%]', delay: 3.2 },
-  { icon: Wallet, className: 'right-[26%] top-[12%]', delay: 4 },
+  { icon: ReceiptText, className: 'left-[8%] top-[22%]', delay: 0, speed: 0.7 },
+  { icon: Calculator, className: 'right-[10%] top-[26%]', delay: 0.8, speed: 0.8 },
+  { icon: Globe, className: 'left-[14%] bottom-[18%]', delay: 1.6, speed: 0.74 },
+  { icon: Smartphone, className: 'right-[14%] bottom-[22%]', delay: 2.4, speed: 0.86 },
+  { icon: BarChart3, className: 'left-[28%] bottom-[8%]', delay: 3.2, speed: 0.78 },
+  { icon: Wallet, className: 'right-[26%] top-[12%]', delay: 4, speed: 0.72 },
 ]
 
 export default function HeroBackdrop() {
@@ -223,14 +227,19 @@ export default function HeroBackdrop() {
       <div className="absolute bottom-0 right-1/4 h-[380px] w-[380px] rounded-full bg-aqua-600/15 blur-[120px]" />
 
       {FLOATING.map((chip) => (
-        <motion.div
+        <Parallax
           key={chip.className}
-          animate={{ y: [0, -16, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: chip.delay }}
-          className={`absolute hidden h-14 w-14 items-center justify-center rounded-2xl border border-aqua-400/30 bg-ink-900/60 text-aqua-400 shadow-[0_0_24px_rgba(34,211,238,0.2)] backdrop-blur lg:flex ${chip.className}`}
+          speed={chip.speed}
+          className={`absolute hidden lg:flex ${chip.className}`}
         >
-          <chip.icon size={22} strokeWidth={2} />
-        </motion.div>
+          <motion.div
+            animate={{ y: [0, -16, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: chip.delay }}
+            className="flex h-14 w-14 items-center justify-center rounded-2xl border border-aqua-400/30 bg-ink-900/60 text-aqua-400 shadow-[0_0_24px_rgba(34,211,238,0.2)] backdrop-blur"
+          >
+            <chip.icon size={22} strokeWidth={2} />
+          </motion.div>
+        </Parallax>
       ))}
 
       <AnimatePresence mode="sync">
@@ -242,13 +251,15 @@ export default function HeroBackdrop() {
           transition={{ opacity: { duration: 1.4 } }}
           className={`absolute hidden lg:block ${SLIDES[index].position}`}
         >
-          <motion.div
-            animate={{ scale: [1, 1.14, 1.05] }}
-            transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-            className="opacity-90"
-          >
-            {SLIDES[index].element}
-          </motion.div>
+          <Parallax speed={SLIDES[index].speed} className="h-full w-full">
+            <motion.div
+              animate={{ scale: [1, 1.14, 1.05] }}
+              transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+              className="opacity-90"
+            >
+              {SLIDES[index].element}
+            </motion.div>
+          </Parallax>
         </motion.div>
       </AnimatePresence>
 
@@ -261,7 +272,9 @@ export default function HeroBackdrop() {
           transition={{ opacity: { duration: 1.4 } }}
           className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center opacity-30 lg:hidden"
         >
-          <div className={SLIDES[index].mobileScaleClass}>{SLIDES[index].element}</div>
+          <Parallax speed={SLIDES[index].speed * 0.8} className="h-full w-full">
+            <div className={SLIDES[index].mobileScaleClass}>{SLIDES[index].element}</div>
+          </Parallax>
         </motion.div>
       </AnimatePresence>
 

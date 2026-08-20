@@ -256,13 +256,20 @@ function ImageInput({
 }
 
 function ProductsTab() {
-  const { config, updateProduct, addProduct, removeProduct, categoryName } = useConfig()
-  const [savedId, setSavedId] = useState<string | null>(null)
+  const { config, updateProduct, addProduct, removeProduct, categoryName, persist } = useConfig()
+  const [saveState, setSaveState] = useState<{
+    id: string
+    state: 'saving' | 'ok' | 'error'
+  } | null>(null)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
-  const save = (id: string) => {
-    setSavedId(id)
-    setTimeout(() => setSavedId(null), 1500)
+  const save = async (id: string) => {
+    setSaveState({ id, state: 'saving' })
+    const ok = await persist()
+    setSaveState({ id, state: ok ? 'ok' : 'error' })
+    if (ok) {
+      setTimeout(() => setSaveState((s) => (s?.id === id ? null : s)), 1500)
+    }
   }
 
   const confirmDelete = (id: string) => {
@@ -282,9 +289,27 @@ function ProductsTab() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {savedId && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-aqua-500/15 px-3 py-1.5 text-xs font-semibold text-aqua-300">
-              <Save size={13} /> Guardado
+          {saveState && (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                saveState.state === 'ok'
+                  ? 'bg-aqua-500/15 text-aqua-300'
+                  : saveState.state === 'error'
+                    ? 'bg-rose-500/15 text-rose-300'
+                    : 'bg-white/10 text-zinc-300'
+              }`}
+            >
+              {saveState.state === 'ok' ? (
+                <>
+                  <Save size={13} /> Guardado
+                </>
+              ) : saveState.state === 'error' ? (
+                <>
+                  <AlertTriangle size={13} /> Error al guardar
+                </>
+              ) : (
+                'Guardando…'
+              )}
             </span>
           )}
           <button
@@ -438,10 +463,13 @@ function ProductsTab() {
           <div className="mt-4 flex justify-end">
             <button
               onClick={() => save(product.id)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-5 py-2.5 text-sm font-semibold text-ink-950"
+              disabled={saveState?.id === product.id && saveState.state === 'saving'}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aqua-400 to-aqua-600 px-5 py-2.5 text-sm font-semibold text-ink-950 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Save size={16} />
-              Guardar cambios
+              {saveState?.id === product.id && saveState.state === 'error'
+                ? 'Reintentar guardar'
+                : 'Guardar cambios'}
             </button>
           </div>
         </div>
@@ -795,7 +823,7 @@ const tabs: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
 ]
 
 export default function Admin() {
-  const { config } = useConfig()
+  const { config, storageFull } = useConfig()
   const [tab, setTab] = useState<Tab>('dashboard')
 
   if (sessionStorage.getItem('modogym_admin_auth') !== '1') {
@@ -842,6 +870,19 @@ export default function Admin() {
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-8">
+        {storageFull && (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold">No se pudieron guardar los últimos cambios.</p>
+              <p className="mt-1 text-amber-200/80">
+                El almacenamiento del navegador está lleno. Usa imágenes más pequeñas, elimina
+                productos que ya no necesites y vuelve a intentar.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="mb-8 flex flex-wrap gap-2">
           {tabs.map((t) => {
             const Icon = t.icon

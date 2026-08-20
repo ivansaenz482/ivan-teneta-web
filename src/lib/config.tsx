@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -7,7 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { PROFILE, PRODUCTS, CATEGORIES, type Product, type Category } from '../data'
-import { placeholderImage } from './productImages'
+import { placeholderImage, recompressDataUri, isImageDataUri } from './productImages'
 
 export type SiteConfig = {
   brandName: string
@@ -30,7 +31,8 @@ export type SiteConfig = {
   productViews: Record<string, number>
 }
 
-const STORAGE_KEY = 'modogym_site_config_v4'
+const STORAGE_KEY = 'modogym_site_config_v5'
+const LEGACY_KEY = 'modogym_site_config_v4'
 
 function buildDefaults(): SiteConfig {
   return {
@@ -56,38 +58,64 @@ function buildDefaults(): SiteConfig {
   }
 }
 
-function loadConfig(): SiteConfig {
-  const defaults = buildDefaults()
+function readStored(key: string): Partial<SiteConfig> | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return defaults
-    const stored = JSON.parse(raw) as Partial<SiteConfig>
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    return JSON.parse(raw) as Partial<SiteConfig>
+  } catch {
+    return null
+  }
+}
 
-    const defaultProducts = defaults.products
-    let products: Product[]
-    if (stored.products !== undefined) {
-      products = (Array.isArray(stored.products) ? stored.products : []).map(
-        (p) => {
-          const def = defaultProducts.find((d) => d.id === p.id)
-          return def ? { ...def, ...p } : p
-        }
-      )
-    } else {
-      products = defaultProducts
-    }
+function normalizeConfig(stored: Partial<SiteConfig>, defaults: SiteConfig): SiteConfig {
+  const defaultProducts = defaults.products
+  let products: Product[]
+  if (stored.products !== undefined) {
+    products = (Array.isArray(stored.products) ? stored.products : []).map((p) => {
+      const def = defaultProducts.find((d) => d.id === p.id)
+      return def ? { ...def, ...p } : p
+    })
+  } else {
+    products = defaultProducts
+  }
 
-    return {
-      ...defaults,
-      ...stored,
-      categories: Array.isArray(stored.categories) && stored.categories.length > 0
+  return {
+    ...defaults,
+    ...stored,
+    categories:
+      Array.isArray(stored.categories) && stored.categories.length > 0
         ? stored.categories
         : defaults.categories,
-      products,
-      productViews: stored.productViews ?? defaults.productViews,
-    }
-  } catch {
-    return defaults
+    products,
+    productViews: stored.productViews ?? defaults.productViews,
   }
+}
+
+async function compressImagesInConfig(
+  config: SiteConfig,
+  maxSize: number,
+  quality = 0.8
+): Promise<SiteConfig> {
+  let changed = false
+  const products = await Promise.all(
+    config.products.map(async (p) => {
+      if (!isImageDataUri(p.image)) return p
+      const image = await recompressDataUri(p.image, maxSize, quality)
+      if (image === p.image) return p
+      changed = true
+      return { ...p, image }
+    })
+  )
+  let logoImage = config.logoImage
+  if (isImageDataUri(config.logoImage)) {
+    const next = await recompressDataUri(config.logoImage, maxSize, quality)
+    if (next !== config.logoImage) {
+      logoImage = next
+      changed = true
+    }
+  }
+  return changed ? { ...config, products, logoImage } : config
 }
 
 type ConfigContextValue = {
@@ -102,29 +130,71 @@ type ConfigContextValue = {
   categoryName: (id: string) => string
   recordProductView: (id: string) => void
   recordWhatsappClick: () => void
+  persist: () => Promise<boolean>
+  storageFull: boolean
 }
 
 const ConfigContext = createContext<ConfigContextValue | null>(null)
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<SiteConfig>(loadConfig)
-  const visitRecorded = useRef(false)
+  const [config, setConfig] = useState<SiteConfig>(() => {
+    const defaults = buildDefaults()
+    const current = readStored(STORAGE_KEY)
+    return current ? normalizeConfig(current, defaults) : defaults
+  })
+  const [storageFull, setStorageFull] = useState(false)
+  const visitedRef = useRef(false)
+  const hydratedRef = useRef(false)
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-    } catch {
-      // localStorage lleno (imágenes grandes) — se ignora silenciosamente
+    hydratedRef.current = true
+    if (visitedRef.current) return
+    visitedRef.current = true
+
+    const current = readStored(STORAGE_KEY)
+    if (!current) {
+      const legacy = readStored(LEGACY_KEY)
+      if (legacy) {
+        setConfig((c) => normalizeConfig(legacy, c))
+        return
+      }
     }
-  }, [config])
+
+    if (!sessionStorage.getItem('modogym_visited')) {
+      sessionStorage.setItem('modogym_visited', '1')
+      setConfig((c) => ({ ...c, visits: (c.visits ?? 0) + 1 }))
+    }
+  }, [])
+
+  const persist = useCallback(async (c: SiteConfig): Promise<boolean> => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(c))
+      localStorage.removeItem(LEGACY_KEY)
+      setStorageFull(false)
+      return true
+    } catch {
+      for (const size of [400, 300, 200, 140]) {
+        const slim = await compressImagesInConfig(c, size)
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(slim))
+          localStorage.removeItem(LEGACY_KEY)
+          setStorageFull(false)
+          return true
+        } catch {
+          // sigue reduciendo el tamaño
+        }
+      }
+      setStorageFull(true)
+      return false
+    }
+  }, [])
 
   useEffect(() => {
-    if (visitRecorded.current) return
-    visitRecorded.current = true
-    if (sessionStorage.getItem('modogym_visited')) return
-    sessionStorage.setItem('modogym_visited', '1')
-    setConfig((c) => ({ ...c, visits: (c.visits ?? 0) + 1 }))
-  }, [])
+    if (!hydratedRef.current) return
+    void persist(config)
+  }, [config, persist])
+
+  const persistNow = useCallback(() => persist(config), [persist, config])
 
   const updateConfig = (patch: Partial<SiteConfig>) => {
     setConfig((c) => ({ ...c, ...patch }))
@@ -171,7 +241,12 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const resetConfig = () => setConfig(buildDefaults())
+  const resetConfig = () => {
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(LEGACY_KEY)
+    setStorageFull(false)
+    setConfig(buildDefaults())
+  }
 
   const waLink = (message?: string) =>
     `https://wa.me/${config.whatsappIntl.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
@@ -211,6 +286,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         categoryName,
         recordProductView,
         recordWhatsappClick,
+        persist: persistNow,
+        storageFull,
       }}
     >
       {children}

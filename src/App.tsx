@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { MessageCircle } from 'lucide-react'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Services from './components/Services'
@@ -19,6 +20,16 @@ import { useConfig } from './lib/config'
 
 function MainSite() {
   const { config, waLink, recordWhatsappClick } = useConfig()
+
+  useEffect(() => {
+    const refresh = () => ScrollTrigger.refresh()
+    window.addEventListener('load', refresh)
+    const id = window.setTimeout(refresh, 600)
+    return () => {
+      window.removeEventListener('load', refresh)
+      window.clearTimeout(id)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen overflow-x-hidden">

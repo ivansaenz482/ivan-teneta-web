@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   ArrowRight,
   MessageCircle,
@@ -12,6 +12,7 @@ import { useConfig } from '../lib/config'
 import HeroBackdrop from './HeroBackdrop'
 import BlurText from './reactbits/BlurText'
 import CountUp from './reactbits/CountUp'
+import { Parallax } from './Parallax'
 
 type Stat = {
   label: string
@@ -77,16 +78,14 @@ function StatDisplay({ stat }: { stat: Stat }) {
 }
 
 export default function Hero() {
-  const { scrollY } = useScroll()
-  const y = useTransform(scrollY, [0, 500], [0, 120])
   const { waLink, recordWhatsappClick } = useConfig()
 
   return (
     <section className="relative overflow-hidden bg-grid">
       <HeroBackdrop />
 
-      <motion.div
-        style={{ y }}
+      <Parallax
+        speed={0.85}
         className="relative mx-auto flex min-h-screen min-h-[100svh] max-w-7xl flex-col items-center justify-center px-5 pb-16 pt-28 sm:px-6"
       >
         <motion.div
@@ -177,7 +176,7 @@ export default function Hero() {
             <Zap size={14} className="text-aqua-400" /> Resultados rápidos
           </span>
         </motion.div>
-      </motion.div>
+      </Parallax>
     </section>
   )
 }

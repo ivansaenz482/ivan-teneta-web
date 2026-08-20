@@ -12,27 +12,49 @@ function readFile(file: File): Promise<string> {
   })
 }
 
-export async function fileToDataUri(file: File, maxSize = 700): Promise<string> {
-  const data = await readFile(file)
+function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.onload = () => {
-      let { width, height } = img
-      const scale = Math.min(1, maxSize / Math.max(width, height))
-      width = Math.max(1, Math.round(width * scale))
-      height = Math.max(1, Math.round(height * scale))
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        resolve(data)
-        return
-      }
-      ctx.drawImage(img, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/jpeg', 0.85))
-    }
+    img.onload = () => resolve(img)
     img.onerror = () => reject(new Error('Imagen inválida'))
-    img.src = data
+    img.src = src
   })
+}
+
+function drawScaled(img: HTMLImageElement, maxSize: number, quality: number): string {
+  let { width, height } = img
+  const scale = Math.min(1, maxSize / Math.max(width, height))
+  width = Math.max(1, Math.round(width * scale))
+  height = Math.max(1, Math.round(height * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return img.src
+  ctx.drawImage(img, 0, 0, width, height)
+  return canvas.toDataURL('image/jpeg', quality)
+}
+
+export async function fileToDataUri(file: File, maxSize = 512, quality = 0.8): Promise<string> {
+  const data = await readFile(file)
+  const img = await loadImage(data)
+  return drawScaled(img, maxSize, quality)
+}
+
+export function isImageDataUri(value: string): boolean {
+  return /^data:image\/(png|jpe?g|webp|gif);base64,/.test(value)
+}
+
+export async function recompressDataUri(
+  dataUri: string,
+  maxSize = 512,
+  quality = 0.8
+): Promise<string> {
+  if (!isImageDataUri(dataUri)) return dataUri
+  try {
+    const img = await loadImage(dataUri)
+    return drawScaled(img, maxSize, quality)
+  } catch {
+    return dataUri
+  }
 }

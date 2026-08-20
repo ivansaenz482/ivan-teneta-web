@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, FolderOpen, ArrowUpRight, Layers } from 'lucide-react'
 import { PROJECTS } from '../data'
 import { useConfig } from '../lib/config'
+import { ParallaxImage } from './Parallax'
 
 export default function Gallery() {
   const { waLink, recordWhatsappClick } = useConfig()
@@ -61,10 +62,11 @@ export default function Gallery() {
                 transition={{ opacity: { duration: 0.7 }, scale: { duration: 7, ease: 'linear' } }}
                 className="absolute inset-0"
               >
-                <img
+                <ParallaxImage
                   src={project.image}
                   alt={project.title}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full"
+                  speed={0.8}
                 />
               </motion.div>
             </AnimatePresence>
