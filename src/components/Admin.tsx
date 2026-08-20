@@ -19,6 +19,8 @@ import {
   Plus,
   Trash2,
   AlertTriangle,
+  Cloud,
+  CloudOff,
 } from 'lucide-react'
 import { useConfig } from '../lib/config'
 import { fileToDataUri } from '../lib/productImages'
@@ -822,6 +824,22 @@ const tabs: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'seguridad', label: 'Seguridad', icon: Lock },
 ]
 
+function SyncBadge() {
+  const { syncStatus } = useConfig()
+  if (syncStatus === 'pending') return null
+  const ok = syncStatus === 'ok'
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+        ok ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'
+      }`}
+    >
+      {ok ? <Cloud size={13} /> : <CloudOff size={13} />}
+      {ok ? 'Sincronizado en la nube' : 'Sin conexión a la nube'}
+    </span>
+  )
+}
+
 export default function Admin() {
   const { config, storageFull } = useConfig()
   const [tab, setTab] = useState<Tab>('dashboard')
@@ -839,8 +857,9 @@ export default function Admin() {
               <LayoutDashboard size={20} />
             </span>
             <div>
-              <div className="font-display text-base font-bold text-white">
+              <div className="flex items-center gap-2 font-display text-base font-bold text-white">
                 Panel de Administración
+                <SyncBadge />
               </div>
               <div className="text-xs text-zinc-400">
                 {config.visits} visitas registradas

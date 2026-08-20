@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { PROFILE, PRODUCTS, CATEGORIES, type Product, type Category } from '../data'
 import { placeholderImage, recompressDataUri, isImageDataUri } from './productImages'
+import { fetchCloudConfig, pushCloudConfig } from './cloud'
 
 export type SiteConfig = {
   brandName: string
@@ -118,6 +119,8 @@ async function compressImagesInConfig(
   return changed ? { ...config, products, logoImage } : config
 }
 
+type SyncStatus = 'pending' | 'ok' | 'offline'
+
 type ConfigContextValue = {
   config: SiteConfig
   updateConfig: (patch: Partial<SiteConfig>) => void
@@ -132,6 +135,7 @@ type ConfigContextValue = {
   recordWhatsappClick: () => void
   persist: () => Promise<boolean>
   storageFull: boolean
+  syncStatus: SyncStatus
 }
 
 const ConfigContext = createContext<ConfigContextValue | null>(null)
@@ -143,6 +147,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     return current ? normalizeConfig(current, defaults) : defaults
   })
   const [storageFull, setStorageFull] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('pending')
   const visitedRef = useRef(false)
   const hydratedRef = useRef(false)
 
@@ -156,7 +161,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       const legacy = readStored(LEGACY_KEY)
       if (legacy) {
         setConfig((c) => normalizeConfig(legacy, c))
-        return
+        // no return: también contar visita y cargar desde la nube
       }
     }
 
@@ -164,34 +169,62 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem('modogym_visited', '1')
       setConfig((c) => ({ ...c, visits: (c.visits ?? 0) + 1 }))
     }
+
+    // Sincronización con Firestore (la nube es la fuente de verdad para multi-dispositivo)
+    let cancelled = false
+    ;(async () => {
+      try {
+        const cloud = await fetchCloudConfig()
+        if (cancelled) return
+        if (cloud) {
+          setConfig((c) => ({ ...normalizeConfig(cloud, c), adminPassword: c.adminPassword }))
+          setSyncStatus('ok')
+        } else {
+          setSyncStatus('ok')
+        }
+      } catch {
+        if (!cancelled) setSyncStatus('offline')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const persist = useCallback(async (c: SiteConfig): Promise<boolean> => {
+    let payload: SiteConfig = c
+    let localOk = false
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(c))
       localStorage.removeItem(LEGACY_KEY)
+      localOk = true
       setStorageFull(false)
-      return true
     } catch {
       for (const size of [400, 300, 200, 140]) {
         const slim = await compressImagesInConfig(c, size)
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(slim))
           localStorage.removeItem(LEGACY_KEY)
+          payload = slim
+          localOk = true
           setStorageFull(false)
-          return true
+          break
         } catch {
           // sigue reduciendo el tamaño
         }
       }
-      setStorageFull(true)
-      return false
+      if (!localOk) setStorageFull(true)
     }
+
+    const cloudOk = await pushCloudConfig(payload)
+    setSyncStatus(cloudOk ? 'ok' : 'offline')
+    return localOk && cloudOk
   }, [])
 
   useEffect(() => {
     if (!hydratedRef.current) return
-    void persist(config)
+    const id = window.setTimeout(() => void persist(config), 650)
+    return () => window.clearTimeout(id)
   }, [config, persist])
 
   const persistNow = useCallback(() => persist(config), [persist, config])
@@ -288,6 +321,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         recordWhatsappClick,
         persist: persistNow,
         storageFull,
+        syncStatus,
       }}
     >
       {children}
