@@ -216,7 +216,18 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       if (!localOk) setStorageFull(true)
     }
 
-    const cloudOk = await pushCloudConfig(payload)
+    // Firestore tiene límite de 1MB por documento: comprimir para la nube si hace falta
+    let cloudPayload = payload
+    if (JSON.stringify(cloudPayload).length > 900_000) {
+      for (const size of [400, 300, 200, 140]) {
+        const slim = await compressImagesInConfig(cloudPayload, size)
+        if (JSON.stringify(slim).length < 900_000) {
+          cloudPayload = slim
+          break
+        }
+      }
+    }
+    const cloudOk = await pushCloudConfig(cloudPayload)
     setSyncStatus(cloudOk ? 'ok' : 'offline')
     return localOk && cloudOk
   }, [])
