@@ -38,10 +38,21 @@ npm run lint    # linter (oxlint)
 
 ## 📦 Publicación
 
-El repositorio incluye un workflow de GitHub Actions (`.github/workflows/deploy.yml`) que publica
-automáticamente la carpeta `dist` en **GitHub Pages** al hacer push a la rama `main`.
+### Opción A — Vercel (recomendada, más profesional)
 
-La página queda disponible en:
+1. Entra a [vercel.com](https://vercel.com) e inicia sesión con tu cuenta de GitHub.
+2. **Add New → Project**, importa **`ivan-teneta-web`**.
+3. Vercel detecta Vite automáticamente (usa `vercel.json` del repo). Haz clic en **Deploy**.
+4. Terminado: Vercel se encarga de desplegar en cada push a `main`, con preview por rama,
+   HTTPS y dominio propio.
+
+Cuando Vercel te asigne el dominio, actualiza la URL `canonical` y las etiquetas
+`og:url` en `index.html`.
+
+### Opción B — GitHub Pages
+
+El repositorio incluye un workflow de GitHub Actions (`.github/workflows/deploy.yml`) que publica
+la carpeta `dist` en **GitHub Pages** al hacer push a la rama `main`:
 
 ```
 https://ivansaenz482.github.io/ivan-teneta-web/
