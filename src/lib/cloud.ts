@@ -95,6 +95,25 @@ export async function incrementStat(field: string, by = 1): Promise<boolean> {
   }
 }
 
+function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(
+      () => reject(new Error('timeout')),
+      ms
+    )
+    promise.then(
+      (val) => {
+        window.clearTimeout(timer)
+        resolve(val)
+      },
+      (err) => {
+        window.clearTimeout(timer)
+        reject(err)
+      }
+    )
+  })
+}
+
 export async function uploadImage(
   file: File,
   folder = 'products',
@@ -106,8 +125,27 @@ export async function uploadImage(
   const storage = getStorage(getApp())
   const safeExt = (file.type.split('/')[1] || 'jpg').replace(/[^a-z0-9]/gi, '')
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`
-  await uploadBytes(storageRef(storage, path), blob)
+  await timeout(uploadBytes(storageRef(storage, path), blob), 30000)
   return getDownloadURL(storageRef(storage, path))
+}
+
+export function friendlyUploadError(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? ''
+  switch (code) {
+    case 'storage/unauthorized':
+      return 'Permiso denegado. Revisa las reglas de Storage (storage.rules) y que permitan escritura.'
+    case 'storage/bucket-not-found':
+      return 'El bucket de Storage no existe. Habilita Firebase Storage en la consola.'
+    case 'storage/quota-exceeded':
+      return 'Se alcanzó la cuota de almacenamiento de Firebase.'
+    case 'storage/retry-limit-exceeded':
+    case 'timeout':
+      return 'La carga tardó demasiado. Verifica tu conexión y que Storage esté habilitado.'
+    case 'storage/object-not-found':
+      return 'No se encontró el archivo. Reintenta la subida.'
+    default:
+      return 'No se pudo subir la imagen. Revisa que Firebase Storage esté habilitado y las reglas permitan escritura.'
+  }
 }
 
 export function isStorageUrl(value: string): boolean {

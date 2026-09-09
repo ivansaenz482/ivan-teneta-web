@@ -26,7 +26,12 @@ import {
   X,
 } from 'lucide-react'
 import { useConfig } from '../lib/config'
-import { uploadImage, deleteStorageImage, isStorageUrl } from '../lib/cloud'
+import {
+  uploadImage,
+  deleteStorageImage,
+  isStorageUrl,
+  friendlyUploadError,
+} from '../lib/cloud'
 import type { Product } from '../data'
 
 function Field({
@@ -218,6 +223,7 @@ function ImageInput({
   onResetAvailable: boolean
 }) {
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   return (
     <div className="flex items-center gap-4">
       <img
@@ -225,36 +231,47 @@ function ImageInput({
         alt="Producto"
         className="h-16 w-16 shrink-0 rounded-lg border border-white/10 bg-ink-950/60 object-contain"
       />
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:border-aqua-400/60 hover:text-white">
-          <Upload size={14} />
-          {busy ? 'Cargando…' : 'Subir imagen'}
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
-              const file = e.target.files?.[0]
-              if (!file) return
-              setBusy(true)
-              try {
-                if (isStorageUrl(value)) void deleteStorageImage(value)
-                onChange(await uploadImage(file))
-              } finally {
-                setBusy(false)
-                e.target.value = ''
-              }
-            }}
-          />
-        </label>
-        {onResetAvailable && (
-          <button
-            onClick={onReset}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-zinc-400 transition-colors hover:border-rose-400/60 hover:text-rose-300"
-          >
-            <RotateCcw size={14} />
-            Restablecer
-          </button>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:border-aqua-400/60 hover:text-white">
+            <Upload size={14} />
+            {busy ? 'Cargando…' : 'Subir imagen'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setBusy(true)
+                setError(null)
+                try {
+                  if (isStorageUrl(value)) void deleteStorageImage(value)
+                  onChange(await uploadImage(file))
+                } catch (err) {
+                  setError(friendlyUploadError(err))
+                } finally {
+                  setBusy(false)
+                  e.target.value = ''
+                }
+              }}
+            />
+          </label>
+          {onResetAvailable && (
+            <button
+              onClick={onReset}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-zinc-400 transition-colors hover:border-rose-400/60 hover:text-rose-300"
+            >
+              <RotateCcw size={14} />
+              Restablecer
+            </button>
+          )}
+        </div>
+        {error && (
+          <p className="max-w-xs text-xs font-medium text-rose-300">
+            <AlertTriangle size={13} className="mr-1 inline" />
+            {error}
+          </p>
         )}
       </div>
     </div>
@@ -269,6 +286,7 @@ function MultiImageInput({
   onChange: (images: string[]) => void
 }) {
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const remove = (index: number) => {
     const target = images[index]
@@ -337,12 +355,15 @@ function MultiImageInput({
               const files = Array.from(e.target.files ?? [])
               if (files.length === 0) return
               setBusy(true)
+              setError(null)
               let list = images
               try {
                 for (const file of files) {
                   list = [...list, await uploadImage(file)]
                   onChange(list)
                 }
+              } catch (err) {
+                setError(friendlyUploadError(err))
               } finally {
                 setBusy(false)
                 e.target.value = ''
@@ -351,6 +372,12 @@ function MultiImageInput({
           />
         </label>
       </div>
+      {error && (
+        <p className="flex items-center gap-1.5 text-xs font-medium text-rose-300">
+          <AlertTriangle size={13} className="shrink-0" />
+          {error}
+        </p>
+      )}
       <p className="text-[11px] text-zinc-500">
         Sube varias imágenes. La primera (izquierda) es la principal; en la tienda se
         deslizan automáticamente. Pasa el cursor sobre una miniatura para marcarla como
