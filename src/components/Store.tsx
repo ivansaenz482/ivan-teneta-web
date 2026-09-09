@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShoppingCart, MessageCircle, Tag, Flame } from 'lucide-react'
+import { ShoppingCart, MessageCircle, Tag, Flame, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useConfig } from '../lib/config'
 import SpotlightCard from './reactbits/SpotlightCard'
 import ShinyText from './reactbits/ShinyText'
@@ -41,6 +41,10 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const tracked = useRef(false)
 
+  const slides = [product.image, ...(product.images ?? [])]
+  const [current, setCurrent] = useState(0)
+  const [paused, setPaused] = useState(false)
+
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -57,6 +61,19 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     return () => observer.disconnect()
   }, [product.id, recordProductView])
 
+  useEffect(() => {
+    if (current >= slides.length) setCurrent(0)
+  }, [slides.length, current])
+
+  useEffect(() => {
+    if (paused || slides.length <= 1) return
+    const id = window.setInterval(() => setCurrent((c) => (c + 1) % slides.length), 3500)
+    return () => window.clearInterval(id)
+  }, [paused, slides.length])
+
+  const go = (dir: number) =>
+    setCurrent((c) => (c + dir + slides.length) % slides.length)
+
   return (
     <motion.div
       ref={ref}
@@ -66,15 +83,55 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className="h-full"
     >
-      <SpotlightCard className="flex h-full flex-col">
-        <div className="relative flex min-h-40 items-center justify-center overflow-hidden rounded-t-2xl bg-ink-950/60 sm:min-h-48">
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            className="max-h-64 w-full object-contain"
-          />
+      <SpotlightCard className="group flex h-full flex-col">
+        <div
+          className="relative flex min-h-40 items-center justify-center overflow-hidden rounded-t-2xl bg-ink-950/60 sm:min-h-48"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          {slides.map((src, i) => (
+            <img
+              key={`${src}-${i}`}
+              src={src}
+              alt={product.name}
+              loading="lazy"
+              className={`absolute h-full w-full object-contain transition-opacity duration-500 ${
+                i === current ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          ))}
           <div className="absolute left-2 top-2">{tagBadge(product.tag)}</div>
+
+          {slides.length > 1 && (
+            <>
+              <button
+                onClick={() => go(-1)}
+                aria-label="Imagen anterior"
+                className="absolute left-1.5 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/70"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                onClick={() => go(1)}
+                aria-label="Imagen siguiente"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/70"
+              >
+                <ChevronRight size={16} />
+              </button>
+              <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrent(i)}
+                    aria-label={`Ir a la imagen ${i + 1}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === current ? 'w-4 bg-aqua-400' : 'w-1.5 bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">

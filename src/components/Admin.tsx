@@ -21,6 +21,9 @@ import {
   AlertTriangle,
   Cloud,
   CloudOff,
+  ImagePlus,
+  Star,
+  X,
 } from 'lucide-react'
 import { useConfig } from '../lib/config'
 import { uploadImage, deleteStorageImage, isStorageUrl } from '../lib/cloud'
@@ -258,6 +261,105 @@ function ImageInput({
   )
 }
 
+function MultiImageInput({
+  images,
+  onChange,
+}: {
+  images: string[]
+  onChange: (images: string[]) => void
+}) {
+  const [busy, setBusy] = useState(false)
+
+  const remove = (index: number) => {
+    const target = images[index]
+    if (isStorageUrl(target)) void deleteStorageImage(target)
+    onChange(images.filter((_, i) => i !== index))
+  }
+
+  const makeMain = (index: number) => {
+    if (index === 0) return
+    const next = [...images]
+    const [target] = next.splice(index, 1)
+    onChange([target, ...next])
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-3">
+        {images.map((src, i) => (
+          <div
+            key={`${src}-${i}`}
+            className="group relative h-20 w-20 overflow-hidden rounded-lg border border-white/10 bg-ink-950/60"
+          >
+            <img src={src} alt="" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+              {i !== 0 && (
+                <button
+                  onClick={() => makeMain(i)}
+                  aria-label="Marcar como principal"
+                  title="Marcar como principal"
+                  className="rounded-md bg-aqua-500/90 p-1.5 text-ink-950"
+                >
+                  <Star size={13} />
+                </button>
+              )}
+              <button
+                onClick={() => remove(i)}
+                aria-label="Quitar imagen"
+                title="Quitar imagen"
+                className="rounded-md bg-rose-500/90 p-1.5 text-white"
+              >
+                <X size={13} />
+              </button>
+            </div>
+            {i === 0 && (
+              <span className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-aqua-400 to-aqua-600 py-0.5 text-center text-[9px] font-bold uppercase text-ink-950">
+                Principal
+              </span>
+            )}
+          </div>
+        ))}
+        <label className="inline-flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-white/20 text-zinc-400 transition-colors hover:border-aqua-400/60 hover:text-white">
+          {busy ? (
+            <span className="text-[11px]">Subiendo…</span>
+          ) : (
+            <>
+              <ImagePlus size={18} />
+              <span className="text-[10px] font-semibold">Agregar</span>
+            </>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={async (e) => {
+              const files = Array.from(e.target.files ?? [])
+              if (files.length === 0) return
+              setBusy(true)
+              let list = images
+              try {
+                for (const file of files) {
+                  list = [...list, await uploadImage(file)]
+                  onChange(list)
+                }
+              } finally {
+                setBusy(false)
+                e.target.value = ''
+              }
+            }}
+          />
+        </label>
+      </div>
+      <p className="text-[11px] text-zinc-500">
+        Sube varias imágenes. La primera (izquierda) es la principal; en la tienda se
+        deslizan automáticamente. Pasa el cursor sobre una miniatura para marcarla como
+        principal o quitarla.
+      </p>
+    </div>
+  )
+}
+
 function ProductsTab() {
   const { config, updateProduct, addProduct, removeProduct, categoryName, persist } = useConfig()
   const [saveState, setSaveState] = useState<{
@@ -433,19 +535,19 @@ function ProductsTab() {
               </select>
             </Field>
             <div className="sm:col-span-2 lg:col-span-1">
-              <Field label="Imagen">
-                <ImageInput
-                  value={product.image}
-                  onChange={(dataUri) => updateProduct(product.id, { image: dataUri })}
-                  onReset={() => {
-                    if (isStorageUrl(product.image)) void deleteStorageImage(product.image)
+              <Field label="Imágenes (carrusel)">
+                <MultiImageInput
+                  images={[product.image, ...(product.images ?? [])]}
+                  onChange={(all) => {
                     updateProduct(product.id, {
-                      image: `data:image/svg+xml;utf8,${encodeURIComponent(
-                        `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect width='400' height='400' fill='#101a2f'/><text x='200' y='250' font-size='170' text-anchor='middle'>${product.emoji}</text></svg>`
-                      )}`,
+                      image:
+                        all[0] ??
+                        `data:image/svg+xml;utf8,${encodeURIComponent(
+                          `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect width='400' height='400' fill='#101a2f'/><text x='200' y='250' font-size='170' text-anchor='middle'>${product.emoji}</text></svg>`
+                        )}`,
+                      images: all.slice(1),
                     })
                   }}
-                  onResetAvailable={isStorageUrl(product.image)}
                 />
               </Field>
             </div>

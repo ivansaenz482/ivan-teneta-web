@@ -34,6 +34,7 @@ export type Product = {
   price: number
   emoji: string
   image: string
+  images?: string[]
   description: string
   tag?: 'Nuevo' | 'Popular' | 'Oferta'
 }

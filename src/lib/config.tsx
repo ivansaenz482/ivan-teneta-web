@@ -59,7 +59,11 @@ function buildDefaults(): SiteConfig {
     visits: 0,
     whatsappClicks: 0,
     categories: CATEGORIES,
-    products: PRODUCTS.map((p) => ({ ...p, image: placeholderImage(p.emoji) })),
+    products: PRODUCTS.map((p) => ({
+      ...p,
+      image: placeholderImage(p.emoji),
+      images: p.images ?? [],
+    })),
     productViews: {},
   }
 }
@@ -281,6 +285,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           price: base?.price ?? 0,
           emoji,
           image: base?.image ?? placeholderImage(emoji),
+          images: base?.images ?? [],
           description: base?.description ?? '',
           tag: base?.tag,
         },
