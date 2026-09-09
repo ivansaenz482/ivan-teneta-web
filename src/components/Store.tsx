@@ -4,6 +4,7 @@ import { ShoppingCart, MessageCircle, Tag, Flame, ChevronLeft, ChevronRight } fr
 import { useConfig } from '../lib/config'
 import SpotlightCard from './reactbits/SpotlightCard'
 import ShinyText from './reactbits/ShinyText'
+import ResolvedImage from './ResolvedImage'
 import { TikTokIcon, InstagramIcon } from './icons'
 import type { Product } from '../data'
 
@@ -90,7 +91,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           onMouseLeave={() => setPaused(false)}
         >
           {slides.map((src, i) => (
-            <img
+            <ResolvedImage
               key={`${src}-${i}`}
               src={src}
               alt={product.name}

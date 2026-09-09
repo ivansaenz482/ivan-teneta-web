@@ -1,12 +1,13 @@
 import { Sparkles, MessageCircle, Mail, ArrowUp } from 'lucide-react'
 import { useConfig } from '../lib/config'
 import { TikTokIcon, InstagramIcon } from './icons'
+import ResolvedImage from './ResolvedImage'
 
 export default function Footer() {
   const { config, waLink, recordWhatsappClick } = useConfig()
 
   const logo = config.logoImage ? (
-    <img
+    <ResolvedImage
       src={config.logoImage}
       alt={config.brandName}
       className="h-10 w-10 rounded-xl object-cover"

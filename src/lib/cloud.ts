@@ -5,18 +5,12 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   increment,
 } from 'firebase/firestore'
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from 'firebase/storage'
 import type { SiteConfig } from './config'
 import { FIREBASE_CONFIG } from './firebaseConfig'
-import { fileToDataUri, dataUriToBlob } from './productImages'
+import { fileToDataUri } from './productImages'
 
 let db: ReturnType<typeof getFirestore> | null = null
 let app: FirebaseApp | null = null
@@ -39,6 +33,12 @@ export type FieldStats = {
 
 const CONFIG_DOC = 'site_config/global'
 const STATS_DOC = 'site_stats/global'
+const IMAGES_COLLECTION = 'product_images'
+
+// Referencia de una imagen guardada en Firestore: firestore:image:<docId>
+export function isImageRef(value: string): boolean {
+  return value.startsWith('firestore:image:')
+}
 
 export async function fetchCloudConfig(): Promise<Partial<SiteConfig> | null> {
   try {
@@ -95,10 +95,10 @@ export async function incrementStat(field: string, by = 1): Promise<boolean> {
   }
 }
 
-function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+function timeout<T>(promise: Promise<T>, ms: number, msg: string): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = window.setTimeout(
-      () => reject(Object.assign(new Error('La carga tardó demasiado.'), { code: 'timeout' })),
+      () => reject(Object.assign(new Error(msg), { code: 'timeout' })),
       ms
     )
     promise.then(
@@ -114,54 +114,83 @@ function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   })
 }
 
+// Sube una imagen guardándola como documento de Firestore (plan Spark gratis).
+// Devuelve una referencia corta que ocupa poquísimo en el config.
 export async function uploadImage(
   file: File,
-  folder = 'products',
-  maxSize = 800,
-  quality = 0.8
+  maxSize = 640,
+  quality = 0.75
 ): Promise<string> {
   const dataUri = await fileToDataUri(file, maxSize, quality)
-  const blob = dataUriToBlob(dataUri)
-  const storage = getStorage(getApp())
-  const safeExt = (file.type.split('/')[1] || 'jpg').replace(/[^a-z0-9]/gi, '')
-  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`
-  await timeout(uploadBytes(storageRef(storage, path), blob), 30000)
-  return getDownloadURL(storageRef(storage, path))
+  const docId = `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  await timeout(
+    setDoc(doc(getDb(), IMAGES_COLLECTION, docId), {
+      data: dataUri,
+      updatedAt: Date.now(),
+    }),
+    20000,
+    'La carga tardó demasiado. Revisa tu conexión.'
+  )
+  return `firestore:image:${docId}`
+}
+
+const IMG_CACHE_KEY = 'novasys_img_cache'
+
+function loadCache(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(IMG_CACHE_KEY) || '{}')
+  } catch {
+    return {}
+  }
+}
+
+function saveCache(cache: Record<string, string>) {
+  try {
+    localStorage.setItem(IMG_CACHE_KEY, JSON.stringify(cache))
+  } catch {
+    // el navegador está lleno; se ignora
+  }
+}
+
+// Resuelve una referencia firestore:image:<id> a su data URI real, con caché en localStorage
+// para no gastar lecturas del plan gratuito.
+export async function resolveImage(src: string): Promise<string> {
+  if (!isImageRef(src)) return src
+  const cache = loadCache()
+  if (cache[src]) return cache[src]
+  const docId = src.split(':').pop() as string
+  const snap = await getDoc(doc(getDb(), IMAGES_COLLECTION, docId))
+  const data = snap.data()?.data as string | undefined
+  if (!data) return src
+  cache[src] = data
+  saveCache(cache)
+  return data
+}
+
+export async function deleteStoredImage(image: string): Promise<void> {
+  if (!isImageRef(image)) return
+  const docId = image.split(':').pop() as string
+  const cache = loadCache()
+  delete cache[image]
+  saveCache(cache)
+  try {
+    await deleteDoc(doc(getDb(), IMAGES_COLLECTION, docId))
+  } catch {
+    // ya fue borrada
+  }
 }
 
 export function friendlyUploadError(err: unknown): string {
   const { code } = (err as { code?: string }) ?? {}
   const message = (err as Error)?.message?.replace(/^.*?(Firebase:)/, '$1') ?? ''
   switch (code) {
-    case 'storage/unauthorized':
-      return 'Permiso denegado. Las reglas de Storage no permiten escritura (storage.rules).'
-    case 'storage/unauthenticated':
-      return 'Sin autenticación de Firebase. Habilita Storage y reglas de escritura.'
-    case 'storage/bucket-not-found':
-      return 'El bucket de Storage no existe. El storageBucket en la consola no coincide con el código.'
-    case 'storage/quota-exceeded':
-      return 'Se alcanzó la cuota de almacenamiento de Firebase.'
-    case 'storage/retry-limit-exceeded':
-      return 'La carga falló tras varios intentos. Revisa el storageBucket y la conexión.'
+    case 'permission-denied':
+      return 'Firebase no permite guardar aquí. Revisa las reglas de Firestore (allow read, write).'
     case 'timeout':
-      return 'La carga tardó demasiado (30s). Verifica que Storage esté habilitado y el storageBucket sea correcto.'
-    case 'storage/object-not-found':
-      return 'No se encontró el bucket/archivo. Revisa el storageBucket.'
+      return 'La subida tardó demasiado. Revisa tu conexión e inténtalo de nuevo.'
+    case 'unavailable':
+      return 'No se pudo conectar con Firebase. Revisa tu red.'
     default:
-      return `No se pudo subir. ${code ? `Error (${code})` : 'Error sin código'}${message ? `: ${message}` : ': revisa que Storage esté habilitado y el storageBucket sea correcto.'}`
-  }
-}
-
-export function isStorageUrl(value: string): boolean {
-  return /^https?:\/\//.test(value) && !value.startsWith('data:')
-}
-
-export async function deleteStorageImage(url: string): Promise<void> {
-  if (!isStorageUrl(url)) return
-  try {
-    const storage = getStorage(getApp())
-    await deleteObject(storageRef(storage, url))
-  } catch {
-    // la imagen quizá ya fue borrada o el enlace no es decodificable
+      return `No se pudo subir. ${code ? `Error (${code})` : 'Error sin código'}${message ? `: ${message}` : ': revisa tu conexión a internet.'}`
   }
 }

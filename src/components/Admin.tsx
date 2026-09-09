@@ -28,10 +28,11 @@ import {
 import { useConfig } from '../lib/config'
 import {
   uploadImage,
-  deleteStorageImage,
-  isStorageUrl,
+  deleteStoredImage,
+  isImageRef,
   friendlyUploadError,
 } from '../lib/cloud'
+import ResolvedImage from './ResolvedImage'
 import type { Product } from '../data'
 
 function Field({
@@ -226,7 +227,7 @@ function ImageInput({
   const [error, setError] = useState<string | null>(null)
   return (
     <div className="flex items-center gap-4">
-      <img
+      <ResolvedImage
         src={value}
         alt="Producto"
         className="h-16 w-16 shrink-0 rounded-lg border border-white/10 bg-ink-950/60 object-contain"
@@ -246,7 +247,7 @@ function ImageInput({
                 setBusy(true)
                 setError(null)
                 try {
-                  if (isStorageUrl(value)) void deleteStorageImage(value)
+                  if (isImageRef(value)) void deleteStoredImage(value)
                   onChange(await uploadImage(file))
                 } catch (err) {
                   console.error('Error subiendo imagen:', err)
@@ -291,7 +292,7 @@ function MultiImageInput({
 
   const remove = (index: number) => {
     const target = images[index]
-    if (isStorageUrl(target)) void deleteStorageImage(target)
+    if (isImageRef(target)) void deleteStoredImage(target)
     onChange(images.filter((_, i) => i !== index))
   }
 
@@ -310,7 +311,7 @@ function MultiImageInput({
             key={`${src}-${i}`}
             className="group relative h-20 w-20 overflow-hidden rounded-lg border border-white/10 bg-ink-950/60"
           >
-            <img src={src} alt="" className="h-full w-full object-cover" />
+            <ResolvedImage src={src} alt="" className="h-full w-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
               {i !== 0 && (
                 <button
@@ -463,7 +464,7 @@ function ProductsTab() {
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <img
+              <ResolvedImage
                 src={product.image}
                 alt={product.name}
                 className="h-12 w-12 rounded-lg border border-white/10 bg-ink-950/60 object-contain"
@@ -729,10 +730,10 @@ function SocialTab() {
               )}`}
               onChange={(dataUri) => set({ logoImage: dataUri })}
               onReset={() => {
-                if (isStorageUrl(config.logoImage)) void deleteStorageImage(config.logoImage)
+                if (isImageRef(config.logoImage)) void deleteStoredImage(config.logoImage)
                 set({ logoImage: '' })
               }}
-              onResetAvailable={isStorageUrl(config.logoImage)}
+              onResetAvailable={isImageRef(config.logoImage)}
             />
           </div>
         </Field>

@@ -62,13 +62,15 @@ https://ivansaenz482.github.io/ivan-teneta-web/
 
 Requisitos previos en la consola de [Firebase](https://console.firebase.google.com/):
 
-1. **Crea un proyecto** (p. ej. `ivan-teneta-web`).
-2. **Habilita Firestore Database** (modo de producción).
-3. **Habilita Storage** (para las imágenes de los productos).
-4. Copia la configuración web (apiKey, authDomain, projectId, etc.) en
+1. **Crea un proyecto** (p. ej. `ivan-teneta-web`) con el plan gratuito **Spark** (sin tarjeta).
+2. **Habilita Firestore Database** (modo de producción). Es gratis en Spark.
+3. Copia la configuración web (apiKey, authDomain, projectId, etc.) en
    `src/lib/firebaseConfig.ts`.
-5. Pega las reglas de `firestore.rules` en **Firestore → Rules** y las de
-   `storage.rules` en **Storage → Rules**.
+4. Pega las reglas de `firestore.rules` en **Firestore → Rules** (permite leer/escribir).
+
+> **Imágenes sin costo:** las imágenes de los productos y el logo se guardan como
+> documentos en Firestore (`product_images`), NO en Firebase Storage. Esto funciona
+> completo en el plan Spark (gratis), sin vincular tarjeta ni activar Storage.
 
 ### Panel de administración
 
@@ -86,8 +88,9 @@ Requisitos previos en la consola de [Firebase](https://console.firebase.google.c
 src/
   components/      # secciones de la página y panel admin
   lib/
-    config.tsx     # estado global + sincronización (contexto)
-    cloud.ts       # Firestore + Firebase Storage (lectura/escritura/imágenes)
+    config.tsx        # estado global + sincronización (contexto)
+    cloud.ts          # Firestore (config, estadísticas, imágenes en product_images)
+    resolveImages.ts  # resolución y caché local de imágenes
     firebaseConfig.ts
     productImages.ts
   data.ts          # datos por defecto (perfil, productos, categorías)

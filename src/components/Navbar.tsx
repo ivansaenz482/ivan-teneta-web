@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Menu, X, MessageCircle, Sparkles, ShoppingCart } from 'lucide-react'
 import { useConfig } from '../lib/config'
+import ResolvedImage from './ResolvedImage'
 
 const links = [
   { href: '#inicio', label: 'Inicio' },
@@ -27,7 +28,7 @@ export default function Navbar() {
   }, [])
 
   const logo = config.logoImage ? (
-    <img
+    <ResolvedImage
       src={config.logoImage}
       alt={config.brandName}
       className="h-10 w-10 rounded-xl object-cover"

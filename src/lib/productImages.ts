@@ -45,15 +45,6 @@ export function isImageDataUri(value: string): boolean {
   return /^data:image\/(png|jpe?g|webp|gif);base64,/.test(value)
 }
 
-export function dataUriToBlob(dataUri: string): Blob {
-  const [meta, base64] = dataUri.split(',')
-  const mime = meta.match(/data:(.*?);/)?.[1] ?? 'image/jpeg'
-  const bin = atob(base64)
-  const bytes = new Uint8Array(bin.length)
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-  return new Blob([bytes], { type: mime })
-}
-
 export async function recompressDataUri(
   dataUri: string,
   maxSize = 512,
