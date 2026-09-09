@@ -14,6 +14,7 @@ import {
   fetchCloudStats,
   pushCloudConfig,
   incrementStat,
+  todayKey,
 } from './cloud'
 
 export type SiteConfig = {
@@ -35,6 +36,7 @@ export type SiteConfig = {
   categories: Category[]
   products: Product[]
   productViews: Record<string, number>
+  orders: Record<string, number>
 }
 
 const STORAGE_KEY = 'modogym_site_config_v5'
@@ -65,6 +67,7 @@ function buildDefaults(): SiteConfig {
       images: p.images ?? [],
     })),
     productViews: {},
+    orders: {},
   }
 }
 
@@ -99,6 +102,7 @@ function normalizeConfig(stored: Partial<SiteConfig>, defaults: SiteConfig): Sit
         : defaults.categories,
     products,
     productViews: stored.productViews ?? defaults.productViews,
+    orders: stored.orders ?? defaults.orders,
   }
 }
 
@@ -142,6 +146,7 @@ type ConfigContextValue = {
   categoryName: (id: string) => string
   recordProductView: (id: string) => void
   recordWhatsappClick: () => void
+  recordOrder: (id: string) => void
   persist: () => Promise<boolean>
   storageFull: boolean
   syncStatus: SyncStatus
@@ -195,9 +200,13 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
             visits: (stats?.visits ?? base.visits ?? 0) + (newVisit ? 1 : 0),
             whatsappClicks: stats?.whatsappClicks ?? base.whatsappClicks ?? 0,
             productViews: stats?.productViews ?? base.productViews ?? {},
+            orders: stats?.orders ?? base.orders ?? {},
           }
         })
-        if (newVisit) void incrementStat('visits')
+        if (newVisit) {
+          void incrementStat('visits')
+          void incrementStat(`visitsByDay.${todayKey()}`)
+        }
         setSyncStatus('ok')
       } catch {
         if (!cancelled) setSyncStatus('offline')
@@ -339,6 +348,15 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     void incrementStat('whatsappClicks')
   }
 
+  const recordOrder = (id: string) => {
+    setConfig((c) => ({
+      ...c,
+      orders: { ...c.orders, [id]: (c.orders[id] ?? 0) + 1 },
+    }))
+    void incrementStat(`orders.${id}`)
+    void incrementStat(`ordersByDay.${todayKey()}`)
+  }
+
   const categoryName = (id: string) =>
     config.categories.find((c) => c.id === id)?.name ?? id
 
@@ -358,6 +376,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         categoryName,
         recordProductView,
         recordWhatsappClick,
+        recordOrder,
         persist: persistNow,
         storageFull,
         syncStatus,

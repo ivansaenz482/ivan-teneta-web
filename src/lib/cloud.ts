@@ -4,7 +4,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   deleteDoc,
   increment,
 } from 'firebase/firestore'
@@ -29,11 +28,22 @@ export type FieldStats = {
   visits: number
   whatsappClicks: number
   productViews: Record<string, number>
+  orders: Record<string, number>
+  visitsByDay: Record<string, number>
+  ordersByDay: Record<string, number>
 }
 
 const CONFIG_DOC = 'site_config/global'
 const STATS_DOC = 'site_stats/global'
 const IMAGES_COLLECTION = 'product_images'
+
+// Clave local del día (YYYY-MM-DD) para las series de tiempo.
+export function todayKey(): string {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
 
 // Referencia de una imagen guardada en Firestore: firestore:image:<docId>
 export function isImageRef(value: string): boolean {
@@ -53,8 +63,14 @@ export async function fetchCloudConfig(): Promise<Partial<SiteConfig> | null> {
 
 export async function pushCloudConfig(config: SiteConfig): Promise<boolean> {
   try {
-    const { adminPassword: _admin, visits: _v, whatsappClicks: _w, productViews: _p, ...safe } =
-      config
+    const {
+      adminPassword: _admin,
+      visits: _v,
+      whatsappClicks: _w,
+      productViews: _p,
+      orders: _o,
+      ...safe
+    } = config
     await setDoc(doc(getDb(), CONFIG_DOC), {
       data: JSON.stringify(safe),
       updatedAt: Date.now(),
@@ -74,6 +90,9 @@ export async function fetchCloudStats(): Promise<FieldStats | null> {
       visits: Number(d.visits) || 0,
       whatsappClicks: Number(d.whatsappClicks) || 0,
       productViews: (d.productViews as Record<string, number>) ?? {},
+      orders: (d.orders as Record<string, number>) ?? {},
+      visitsByDay: (d.visitsByDay as Record<string, number>) ?? {},
+      ordersByDay: (d.ordersByDay as Record<string, number>) ?? {},
     }
   } catch {
     return null
@@ -81,17 +100,15 @@ export async function fetchCloudStats(): Promise<FieldStats | null> {
 }
 
 export async function incrementStat(field: string, by = 1): Promise<boolean> {
-  const ref = doc(getDb(), STATS_DOC)
   try {
-    await updateDoc(ref, { [field]: increment(by) })
+    await setDoc(
+      doc(getDb(), STATS_DOC),
+      { [field]: increment(by), updatedAt: Date.now() },
+      { merge: true }
+    )
     return true
   } catch {
-    try {
-      await setDoc(ref, { [field]: increment(by), updatedAt: Date.now() }, { merge: true })
-      return true
-    } catch {
-      return false
-    }
+    return false
   }
 }
 

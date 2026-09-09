@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type ReactNode, type FormEvent } from 'react'
 import {
   ArrowLeft,
   LayoutDashboard,
@@ -14,7 +14,6 @@ import {
   KeyRound,
   TrendingUp,
   Users,
-  Package,
   Tags,
   Plus,
   Trash2,
@@ -26,6 +25,8 @@ import {
   X,
 } from 'lucide-react'
 import { useConfig } from '../lib/config'
+import { fetchCloudStats, type FieldStats } from '../lib/cloud'
+import { BarsChart, TrendChart, RankBars, TrendLegend } from './Charts'
 import {
   uploadImage,
   deleteStoredImage,
@@ -133,21 +134,108 @@ function AdminLogin() {
   )
 }
 
+function dayKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+    d.getDate()
+  ).padStart(2, '0')}`
+}
+
+const EMPTY_MAP: Record<string, number> = {}
+
 function DashboardTab() {
   const { config } = useConfig()
+  const [cloudStats, setCloudStats] = useState<FieldStats | null>(null)
+  const [period, setPeriod] = useState<'day' | 'month' | 'year'>('month')
+
+  useEffect(() => {
+    let active = true
+    fetchCloudStats()
+      .then((s) => {
+        if (active) setCloudStats(s)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
+
   const totalViews = Object.values(config.productViews).reduce((a, b) => a + b, 0)
-  const top = [...config.products]
-    .map((p) => ({ product: p, views: config.productViews[p.id] ?? 0 }))
-    .sort((a, b) => b.views - a.views)
-    .slice(0, 5)
-  const maxViews = Math.max(1, ...top.map((t) => t.views))
+  const totalOrders = Object.values(config.orders ?? {}).reduce((a, b) => a + b, 0)
 
   const stats = [
     { label: 'Visitas', value: config.visits, icon: Users },
-    { label: 'Clics a WhatsApp', value: config.whatsappClicks, icon: MessageCircle },
-    { label: 'Productos publicados', value: config.products.length, icon: Package },
+    { label: 'Pedidos/cotizaciones', value: totalOrders, icon: ShoppingBag },
     { label: 'Vistas de productos', value: totalViews, icon: TrendingUp },
+    { label: 'Clics a WhatsApp', value: config.whatsappClicks, icon: MessageCircle },
   ]
+
+  const visitsByDay = cloudStats?.visitsByDay ?? EMPTY_MAP
+  const ordersByDay = cloudStats?.ordersByDay ?? EMPTY_MAP
+
+  const dailyData = useMemo(() => {
+    const out: { label: string; value: number }[] = []
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const key = dayKey(d)
+      out.push({
+        label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`,
+        value: visitsByDay[key] ?? 0,
+      })
+    }
+    return out
+  }, [visitsByDay])
+
+  const trendData = useMemo(() => {
+    const out: { label: string; visits: number; orders: number }[] = []
+    if (period === 'day') {
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date()
+        d.setDate(d.getDate() - i)
+        const key = dayKey(d)
+        out.push({
+          label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`,
+          visits: visitsByDay[key] ?? 0,
+          orders: ordersByDay[key] ?? 0,
+        })
+      }
+    } else if (period === 'month') {
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date()
+        d.setMonth(d.getMonth() - i)
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+        let visits = 0
+        let orders = 0
+        for (const [k, v] of Object.entries(visitsByDay)) if (k.startsWith(key)) visits += v
+        for (const [k, v] of Object.entries(ordersByDay)) if (k.startsWith(key)) orders += v
+        out.push({
+          label: `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(2)}`,
+          visits,
+          orders,
+        })
+      }
+    } else {
+      for (let i = 3; i >= 0; i--) {
+        const y = new Date().getFullYear() - i
+        const key = String(y)
+        let visits = 0
+        let orders = 0
+        for (const [k, v] of Object.entries(visitsByDay)) if (k.startsWith(key)) visits += v
+        for (const [k, v] of Object.entries(ordersByDay)) if (k.startsWith(key)) orders += v
+        out.push({ label: String(y), visits, orders })
+      }
+    }
+    return out
+  }, [period, visitsByDay, ordersByDay])
+
+  const topViews = [...config.products]
+    .map((p) => ({ label: p.name, value: config.productViews[p.id] ?? 0 }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5)
+  const topOrders = [...config.products]
+    .map((p) => ({ label: p.name, value: config.orders?.[p.id] ?? 0 }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5)
 
   return (
     <div className="space-y-8">
@@ -173,41 +261,80 @@ function DashboardTab() {
       </div>
 
       <div className="neon-border rounded-2xl bg-ink-900/80 p-6">
-        <h3 className="font-display text-lg font-semibold text-white">
-          Productos más vistos por los clientes
-        </h3>
-        <p className="mt-1 text-sm text-zinc-400">
-          Se registra automáticamente cuando un visitante ve cada producto.
-        </p>
-        <div className="mt-6 space-y-4">
-          {top.map(({ product, views }) => (
-            <div key={product.id}>
-              <div className="mb-1 flex items-center justify-between gap-3">
-                <span className="truncate text-sm font-medium text-zinc-200">
-                  {product.name}
-                </span>
-                <span className="shrink-0 text-sm font-bold text-aqua-400 tabular-nums">
-                  {views} vistas
-                </span>
-              </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-white/5">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-aqua-400 to-aqua-600"
-                  style={{ width: `${(views / maxViews) * 100}%` }}
-                />
-              </div>
-            </div>
-          ))}
-          {top.length === 0 && (
-            <p className="text-sm text-zinc-500">Aún no hay vistas registradas.</p>
-          )}
+        <h3 className="font-display text-lg font-semibold text-white">Visitas por día</h3>
+        <p className="mt-1 text-sm text-zinc-400">Últimos 14 días.</p>
+        <div className="mt-5">
+          <BarsChart data={dailyData} color="#22d3ee" />
+          <div className="mt-2 flex justify-between text-[10px] text-zinc-500">
+            <span>{dailyData[0]?.label}</span>
+            <span>Hoy</span>
+          </div>
         </div>
       </div>
 
-      <p className="rounded-xl border border-white/10 bg-ink-950/60 p-4 text-xs leading-relaxed text-zinc-500">
-        Los datos de visitas y vistas se guardan en este navegador (localStorage). Al ser un
-        sitio estático sin servidor, no se sincronizan entre dispositivos.
-      </p>
+      <div className="neon-border rounded-2xl bg-ink-900/80 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-display text-lg font-semibold text-white">
+              Rendimiento de la web
+            </h3>
+            <p className="mt-1 text-sm text-zinc-400">Visitas y pedidos por período.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {(
+              [
+                { key: 'day', label: 'Día' },
+                { key: 'month', label: 'Mes' },
+                { key: 'year', label: 'Año' },
+              ] as const
+            ).map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                  period === p.key
+                    ? 'bg-aqua-400 text-ink-950'
+                    : 'border border-white/15 text-zinc-300 hover:text-white'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-5">
+          <TrendChart data={trendData} />
+          <div className="mt-3">
+            <TrendLegend />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="neon-border rounded-2xl bg-ink-900/80 p-6">
+          <h3 className="font-display text-lg font-semibold text-white">
+            Productos más mirados
+          </h3>
+          <p className="mt-1 text-sm text-zinc-400">
+            Lo que más ven los clientes en la tienda.
+          </p>
+          <div className="mt-5">
+            <RankBars items={topViews} color="#22d3ee" />
+          </div>
+        </div>
+
+        <div className="neon-border rounded-2xl bg-ink-900/80 p-6">
+          <h3 className="font-display text-lg font-semibold text-white">
+            Productos más pedidos / cotizados
+          </h3>
+          <p className="mt-1 text-sm text-zinc-400">
+            Se cuentan cada vez que un cliente toca “Pedir” en un producto.
+          </p>
+          <div className="mt-5">
+            <RankBars items={topOrders} color="#e879f9" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

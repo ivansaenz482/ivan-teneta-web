@@ -38,7 +38,7 @@ function tagBadge(tag?: string) {
 }
 
 function ProductCard({ product, index }: { product: Product; index: number }) {
-  const { orderLink, recordProductView, categoryName } = useConfig()
+  const { orderLink, recordProductView, recordOrder, categoryName } = useConfig()
   const ref = useRef<HTMLDivElement>(null)
   const tracked = useRef(false)
 
@@ -153,6 +153,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               href={orderLink(product)}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => recordOrder(product.id)}
               className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-aqua-400 to-aqua-600 px-3 py-2 text-xs font-semibold text-ink-950 transition-transform hover:scale-105 sm:text-sm"
             >
               <MessageCircle size={14} />
