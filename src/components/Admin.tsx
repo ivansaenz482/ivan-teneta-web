@@ -249,6 +249,7 @@ function ImageInput({
                   if (isStorageUrl(value)) void deleteStorageImage(value)
                   onChange(await uploadImage(file))
                 } catch (err) {
+                  console.error('Error subiendo imagen:', err)
                   setError(friendlyUploadError(err))
                 } finally {
                   setBusy(false)
@@ -363,6 +364,7 @@ function MultiImageInput({
                   onChange(list)
                 }
               } catch (err) {
+                console.error('Error subiendo imagen:', err)
                 setError(friendlyUploadError(err))
               } finally {
                 setBusy(false)

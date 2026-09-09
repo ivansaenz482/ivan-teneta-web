@@ -98,7 +98,7 @@ export async function incrementStat(field: string, by = 1): Promise<boolean> {
 function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = window.setTimeout(
-      () => reject(new Error('timeout')),
+      () => reject(Object.assign(new Error('La carga tardó demasiado.'), { code: 'timeout' })),
       ms
     )
     promise.then(
@@ -130,21 +130,25 @@ export async function uploadImage(
 }
 
 export function friendlyUploadError(err: unknown): string {
-  const code = (err as { code?: string })?.code ?? ''
+  const { code } = (err as { code?: string }) ?? {}
+  const message = (err as Error)?.message?.replace(/^.*?(Firebase:)/, '$1') ?? ''
   switch (code) {
     case 'storage/unauthorized':
-      return 'Permiso denegado. Revisa las reglas de Storage (storage.rules) y que permitan escritura.'
+      return 'Permiso denegado. Las reglas de Storage no permiten escritura (storage.rules).'
+    case 'storage/unauthenticated':
+      return 'Sin autenticación de Firebase. Habilita Storage y reglas de escritura.'
     case 'storage/bucket-not-found':
-      return 'El bucket de Storage no existe. Habilita Firebase Storage en la consola.'
+      return 'El bucket de Storage no existe. El storageBucket en la consola no coincide con el código.'
     case 'storage/quota-exceeded':
       return 'Se alcanzó la cuota de almacenamiento de Firebase.'
     case 'storage/retry-limit-exceeded':
+      return 'La carga falló tras varios intentos. Revisa el storageBucket y la conexión.'
     case 'timeout':
-      return 'La carga tardó demasiado. Verifica tu conexión y que Storage esté habilitado.'
+      return 'La carga tardó demasiado (30s). Verifica que Storage esté habilitado y el storageBucket sea correcto.'
     case 'storage/object-not-found':
-      return 'No se encontró el archivo. Reintenta la subida.'
+      return 'No se encontró el bucket/archivo. Revisa el storageBucket.'
     default:
-      return 'No se pudo subir la imagen. Revisa que Firebase Storage esté habilitado y las reglas permitan escritura.'
+      return `No se pudo subir. ${code ? `Error (${code})` : 'Error sin código'}${message ? `: ${message}` : ': revisa que Storage esté habilitado y el storageBucket sea correcto.'}`
   }
 }
 
