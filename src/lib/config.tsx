@@ -9,7 +9,12 @@ import {
 } from 'react'
 import { PROFILE, PRODUCTS, CATEGORIES, type Product, type Category } from '../data'
 import { placeholderImage, recompressDataUri, isImageDataUri } from './productImages'
-import { fetchCloudConfig, pushCloudConfig } from './cloud'
+import {
+  fetchCloudConfig,
+  fetchCloudStats,
+  pushCloudConfig,
+  incrementStat,
+} from './cloud'
 
 export type SiteConfig = {
   brandName: string
@@ -150,6 +155,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('pending')
   const visitedRef = useRef(false)
   const hydratedRef = useRef(false)
+  const contentDirtyRef = useRef(false)
 
   useEffect(() => {
     hydratedRef.current = true
@@ -161,27 +167,34 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       const legacy = readStored(LEGACY_KEY)
       if (legacy) {
         setConfig((c) => normalizeConfig(legacy, c))
-        // no return: también contar visita y cargar desde la nube
       }
     }
 
+    let newVisit = false
     if (!sessionStorage.getItem('modogym_visited')) {
       sessionStorage.setItem('modogym_visited', '1')
-      setConfig((c) => ({ ...c, visits: (c.visits ?? 0) + 1 }))
+      newVisit = true
     }
 
-    // Sincronización con Firestore (la nube es la fuente de verdad para multi-dispositivo)
+    // La nube es la fuente de verdad para el contenido de la tienda; las estadísticas
+    // se guardan en un documento aparte para que un visitante no pise los cambios del admin.
     let cancelled = false
     ;(async () => {
       try {
-        const cloud = await fetchCloudConfig()
+        const [cloud, stats] = await Promise.all([fetchCloudConfig(), fetchCloudStats()])
         if (cancelled) return
-        if (cloud) {
-          setConfig((c) => ({ ...normalizeConfig(cloud, c), adminPassword: c.adminPassword }))
-          setSyncStatus('ok')
-        } else {
-          setSyncStatus('ok')
-        }
+        setConfig((c) => {
+          const base = cloud ? normalizeConfig(cloud, c) : c
+          return {
+            ...base,
+            adminPassword: c.adminPassword,
+            visits: (stats?.visits ?? base.visits ?? 0) + (newVisit ? 1 : 0),
+            whatsappClicks: stats?.whatsappClicks ?? base.whatsappClicks ?? 0,
+            productViews: stats?.productViews ?? base.productViews ?? {},
+          }
+        })
+        if (newVisit) void incrementStat('visits')
+        setSyncStatus('ok')
       } catch {
         if (!cancelled) setSyncStatus('offline')
       }
@@ -216,7 +229,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       if (!localOk) setStorageFull(true)
     }
 
-    // Firestore tiene límite de 1MB por documento: comprimir para la nube si hace falta
+    // Las imágenes ya son URLs de Firebase Storage, así que este documento es ligero.
+    // Se conserva el ajuste de 1MB solo para contenido heredado guardado como base64.
     let cloudPayload = payload
     if (JSON.stringify(cloudPayload).length > 900_000) {
       for (const size of [400, 300, 200, 140]) {
@@ -229,22 +243,24 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     }
     const cloudOk = await pushCloudConfig(cloudPayload)
     setSyncStatus(cloudOk ? 'ok' : 'offline')
+    contentDirtyRef.current = false
     return localOk && cloudOk
   }, [])
 
   useEffect(() => {
     if (!hydratedRef.current) return
+    if (!contentDirtyRef.current) return
     const id = window.setTimeout(() => void persist(config), 650)
     return () => window.clearTimeout(id)
   }, [config, persist])
 
-  const persistNow = useCallback(() => persist(config), [persist, config])
-
   const updateConfig = (patch: Partial<SiteConfig>) => {
+    contentDirtyRef.current = true
     setConfig((c) => ({ ...c, ...patch }))
   }
 
   const updateProduct = (id: string, patch: Partial<Product>) => {
+    contentDirtyRef.current = true
     setConfig((c) => ({
       ...c,
       products: c.products.map((p) => (p.id === id ? { ...p, ...patch } : p)),
@@ -252,6 +268,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }
 
   const addProduct = (base?: Partial<Product>) => {
+    contentDirtyRef.current = true
     const id = `prod-${Date.now()}`
     const emoji = base?.emoji ?? '🛍️'
     setConfig((c) => ({
@@ -274,6 +291,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }
 
   const removeProduct = (id: string) => {
+    contentDirtyRef.current = true
     setConfig((c) => {
       const views = { ...c.productViews }
       delete views[id]
@@ -286,6 +304,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }
 
   const resetConfig = () => {
+    contentDirtyRef.current = true
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(LEGACY_KEY)
     setStorageFull(false)
@@ -307,14 +326,18 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       ...c,
       productViews: { ...c.productViews, [id]: (c.productViews[id] ?? 0) + 1 },
     }))
+    void incrementStat(`productViews.${id}`)
   }
 
   const recordWhatsappClick = () => {
     setConfig((c) => ({ ...c, whatsappClicks: (c.whatsappClicks ?? 0) + 1 }))
+    void incrementStat('whatsappClicks')
   }
 
   const categoryName = (id: string) =>
     config.categories.find((c) => c.id === id)?.name ?? id
+
+  const persistNow = useCallback(() => persist(config), [persist, config])
 
   return (
     <ConfigContext.Provider

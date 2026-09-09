@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// Reglas para Firestore.
+// PÉGALAS en Firebase Console -> Firestore Database -> Rules
+// Nota: este sitio estático usa un acceso "abierto" para que el panel y la
+// sincronización funcionen sin login de Firebase real. Para un entorno de
+// producción, lo recomendado es limitar la escritura mediante Firebase Auth.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /site_config/{doc} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /site_stats/{doc} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

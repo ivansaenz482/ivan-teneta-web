@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { MessageCircle } from 'lucide-react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -13,10 +13,11 @@ import Store from './components/Store'
 import Contact from './components/Contact'
 import QRCode from './components/QRCode'
 import Footer from './components/Footer'
-import Admin from './components/Admin'
 import BlobCursor from './components/reactbits/BlobCursor'
 import SparksOverlay from './components/reactbits/SparksOverlay'
 import { useConfig } from './lib/config'
+
+const Admin = lazy(() => import('./components/Admin'))
 
 function MainSite() {
   const { config, waLink, recordWhatsappClick } = useConfig()
@@ -82,7 +83,18 @@ export default function App() {
     if (isAdmin) window.scrollTo(0, 0)
   }, [isAdmin])
 
-  if (isAdmin) return <Admin />
+  if (isAdmin)
+    return (
+      <Suspense
+        fallback={
+          <div className="grid min-h-screen place-items-center bg-ink-950 text-sm text-zinc-400">
+            Cargando panel…
+          </div>
+        }
+      >
+        <Admin />
+      </Suspense>
+    )
 
   return <MainSite />
 }

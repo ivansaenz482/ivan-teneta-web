@@ -23,7 +23,7 @@ import {
   CloudOff,
 } from 'lucide-react'
 import { useConfig } from '../lib/config'
-import { fileToDataUri } from '../lib/productImages'
+import { uploadImage, deleteStorageImage, isStorageUrl } from '../lib/cloud'
 import type { Product } from '../data'
 
 function Field({
@@ -235,7 +235,8 @@ function ImageInput({
               if (!file) return
               setBusy(true)
               try {
-                onChange(await fileToDataUri(file))
+                if (isStorageUrl(value)) void deleteStorageImage(value)
+                onChange(await uploadImage(file))
               } finally {
                 setBusy(false)
                 e.target.value = ''
@@ -436,14 +437,15 @@ function ProductsTab() {
                 <ImageInput
                   value={product.image}
                   onChange={(dataUri) => updateProduct(product.id, { image: dataUri })}
-                  onReset={() =>
+                  onReset={() => {
+                    if (isStorageUrl(product.image)) void deleteStorageImage(product.image)
                     updateProduct(product.id, {
                       image: `data:image/svg+xml;utf8,${encodeURIComponent(
                         `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect width='400' height='400' fill='#101a2f'/><text x='200' y='250' font-size='170' text-anchor='middle'>${product.emoji}</text></svg>`
                       )}`,
                     })
-                  }
-                  onResetAvailable={!product.image.includes('emoji')}
+                  }}
+                  onResetAvailable={isStorageUrl(product.image)}
                 />
               </Field>
             </div>
@@ -595,8 +597,11 @@ function SocialTab() {
                 `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' rx='16' fill='#22d3ee'/><text x='40' y='52' font-size='40' text-anchor='middle'>✦</text></svg>`
               )}`}
               onChange={(dataUri) => set({ logoImage: dataUri })}
-              onReset={() => set({ logoImage: '' })}
-              onResetAvailable={Boolean(config.logoImage)}
+              onReset={() => {
+                if (isStorageUrl(config.logoImage)) void deleteStorageImage(config.logoImage)
+                set({ logoImage: '' })
+              }}
+              onResetAvailable={isStorageUrl(config.logoImage)}
             />
           </div>
         </Field>
